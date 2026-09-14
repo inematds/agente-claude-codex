@@ -1,5 +1,7 @@
 # agente-claude-codex
 
+[![Agente Claude → Codex: migre ou fique agnóstico](guia/assets/banner.jpg)](https://inematds.github.io/agente-claude-codex/guia/)
+
 Kit pra migrar um setup Claude Code pro Codex **ou** deixar o trabalho independente de modelo: separar o "cérebro" (contexto, decisões, tarefas, handoffs, skills) do executor (Claude, Codex, Gemini, local).
 
 Baseado na newsletter "Como migrar do Claude para o Codex — ou ficar independente de modelo" e na prompt library "Model-agnostic workspaces" (07 SEP 2026). Leia `PLANO.md` pra entender a análise e o piloto recomendado.
