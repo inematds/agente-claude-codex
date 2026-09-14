@@ -4,6 +4,10 @@ Kit pra migrar um setup Claude Code pro Codex **ou** deixar o trabalho independe
 
 Baseado na newsletter "Como migrar do Claude para o Codex — ou ficar independente de modelo" e na prompt library "Model-agnostic workspaces" (07 SEP 2026). Leia `PLANO.md` primeiro.
 
+## 📖 Guia de uso
+
+Guia completo (landing + passo a passo): **https://inematds.github.io/agente-claude-codex/guia/**
+
 ## O que tem aqui
 | Pasta | Conteúdo |
 |---|---|
