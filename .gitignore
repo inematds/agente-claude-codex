@@ -1,0 +1,5 @@
+# material de terceiros (newsletter traduzida + prompt library paga): fica local até decisão de licença
+docs/
+relatorios/readback-*
+skills/*/dist/
+*.bak-*
