@@ -3,6 +3,7 @@
 #   AGENTS.md  = regras portáteis (lidas por Codex, Gemini, OpenCode...)
 #   CLAUDE.md  = "@AGENTS.md" + resíduo específico do Claude Code
 # Uso: scripts/adapt-instructions.sh <pasta-do-projeto> [--dry-run]
+# Atenção: renomeia toda menção 'CLAUDE.md' → 'AGENTS.md' na parte portátil, inclusive referências a CLAUDE.md de OUTROS projetos; revisar.
 # Não sobrescreve arquivos existentes: grava *.proposto.md ao lado para revisão.
 set -euo pipefail
 ROOT="${1:?pasta do projeto}"; DRY="${2:-}"

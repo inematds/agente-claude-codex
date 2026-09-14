@@ -39,7 +39,7 @@ Fontes: `docs/migrar-claude-para-codex-model-agnostic.md`, `docs/prompt-vs-texto
 
 1. **Auditar** — `scripts/audit.sh` (feito, relatório em `relatorios/`).
 2. **Instruções** — `scripts/adapt-instructions.sh <projeto>` gera `AGENTS.proposto.md` + `CLAUDE.proposto.md`; revisar, renomear. Claude passa a ler `@AGENTS.md`.
-3. **Núcleo portátil** — copiar `template/` pro projeto, preencher `context/overview.md`, `tasks/current.md`.
+3. **Núcleo portátil** — `scripts/init-core.sh <projeto>` (não sobrescreve), preencher `context/overview.md`, `tasks/current.md`.
 4. **Skills** — `scripts/sync-skills.sh import session-handoff` → `build` → `install session-handoff --both` → `drift`.
 5. **Hooks** — `fable-mindset` (SessionStart) não tem equivalente no Codex; o playbook vai pro `AGENTS.md` do projeto como texto. `impeccable` já roda nos dois.
 6. **MCP** — magnific e metricool: registrar no Codex com `codex mcp add` só se um projeto precisar, referenciando as keys de `~/projetos/openpcbotv2/.env` (nunca copiar valor).

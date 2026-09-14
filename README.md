@@ -12,6 +12,7 @@ Baseado na newsletter "Como migrar do Claude para o Codex — ou ficar independe
 | `scripts/audit.sh` | inventário somente leitura Claude x Codex → matriz reutilizável / adaptador / nativo |
 | `scripts/adapt-instructions.sh` | CLAUDE.md → AGENTS.md (portátil) + CLAUDE.md (`@AGENTS.md` + resíduo) |
 | `scripts/sync-skills.sh` | import / build / install / drift de skills via polyskill (uma fonte canônica) |
+| `scripts/init-core.sh` | copia `template/` pra um projeto sem sobrescrever nada existente |
 | `scripts/readback-test.sh` | teste de continuidade: sessão nova em cada runtime responde as 5 perguntas |
 | `template/` | núcleo portátil pra copiar em qualquer projeto (AGENTS.md, context/, tasks/, handoffs/, .agents/skills/, scripts/check.sh) |
 | `relatorios/` | saída das auditorias e readbacks |
@@ -21,7 +22,7 @@ Baseado na newsletter "Como migrar do Claude para o Codex — ou ficar independe
 ```bash
 scripts/audit.sh                                   # 1. inventário
 scripts/adapt-instructions.sh ~/projetos/meu-projeto   # 2. instruções portáteis (gera *.proposto.md)
-cp -r template/. ~/projetos/meu-projeto/           # 3. núcleo portátil (não sobrescreve nada que exista? — confira antes)
+scripts/init-core.sh ~/projetos/meu-projeto        # 3. núcleo portátil (não sobrescreve o que já existe)
 scripts/sync-skills.sh import session-handoff && scripts/sync-skills.sh build && scripts/sync-skills.sh install session-handoff --both
 scripts/readback-test.sh ~/projetos/meu-projeto both   # 4. prova
 ```
