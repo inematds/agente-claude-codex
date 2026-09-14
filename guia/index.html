@@ -145,6 +145,7 @@
   <h2>Auditar → organizar → adaptar → testar → handoff</h2>
   <p class="sub">O núcleo (contexto, decisões, tarefas, skills, handoffs) fica em Markdown comum dentro do projeto. Nas bordas, um adaptador por ferramenta. Claude, Codex, Gemini ou modelo local viram só executores.</p>
   <div class="flow">
+    <span>doctor.sh</span><span class="arr">→</span>
     <span>audit.sh</span><span class="arr">→</span>
     <span>adapt-instructions.sh</span><span class="arr">→</span>
     <span>init-core.sh</span><span class="arr">→</span>
@@ -176,15 +177,21 @@
 
 <section id="guia"><div class="wrap">
   <span class="chip">Guia de uso · passo a passo</span>
-  <h2>Do inventário à prova em cinco passos</h2>
+  <h2>Do diagnóstico à prova em seis passos</h2>
   <p class="sub">Cada passo é reversível. Instalar skill faz backup ao lado. Segredos nunca entram no repo.</p>
 
-  <div class="step"><div class="b">1</div><div>
-    <h3>Clonar e auditar</h3>
-    <p>Gera um relatório em Markdown com versões, gap de skills e a matriz reutilizável / adaptador / nativo.</p>
+  <div class="step"><div class="b">0</div><div>
+    <h3>Clonar e diagnosticar o ambiente</h3>
+    <p>Responde "meu ambiente está pronto?": git, python3, node, Claude Code, Codex CLI, sandbox, MCP, polyskill. Cada item sai como ok, aviso ou falta, com o comando pra resolver.</p>
 <pre><span class="k">git</span> clone <span class="s">https://github.com/inematds/agente-claude-codex</span>
 <span class="k">cd</span> agente-claude-codex
-<span class="k">scripts/audit.sh</span>  <span class="c"># relatorios/auditoria-AAAA-MM-DD.md</span></pre>
+<span class="k">scripts/doctor.sh</span>  <span class="c"># [ok] / [aviso] / [FALTA]</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">1</div><div>
+    <h3>Auditar o que existe</h3>
+    <p>Gera um relatório em Markdown com versões, gap de skills e a matriz reutilizável / adaptador / nativo. Somente leitura.</p>
+<pre><span class="k">scripts/audit.sh</span>  <span class="c"># relatorios/auditoria-AAAA-MM-DD.md</span></pre>
   </div></div>
 
   <div class="step"><div class="b">2</div><div>

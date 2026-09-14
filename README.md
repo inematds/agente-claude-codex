@@ -29,11 +29,19 @@ Sem Claude ou Codex instalado, o passo correspondente é marcado como **não rod
 
 ## Passo a passo
 
-### 1. Clonar e auditar (somente leitura)
+### 0. Clonar e diagnosticar o ambiente
 
 ```bash
 git clone https://github.com/inematds/agente-claude-codex
 cd agente-claude-codex
+scripts/doctor.sh
+```
+
+Responde "meu ambiente está pronto?" antes de qualquer coisa. Confere git, python3, node, Claude Code (skills, CLAUDE.md, hooks), Codex CLI (skills, config, sandbox, MCP), polyskill e os arquivos do próprio kit. Cada item sai como `[ok]`, `[aviso]` (funciona, com limitação) ou `[FALTA]` (essencial, com o comando pra resolver). Somente leitura; sai com código 1 se faltar algo essencial.
+
+### 1. Auditar o que existe (somente leitura)
+
+```bash
 scripts/audit.sh
 ```
 
@@ -112,6 +120,7 @@ Preencha os campos entre colchetes, mantenha `MODE: audit` na primeira rodada, l
 
 | Passo | Resultado |
 |---|---|
+| doctor.sh | passou (2 avisos: sem MCP no Codex, Codex CLI sem import) |
 | audit.sh | passou: 89 skills só no Claude (71 reutilizáveis, 15 adaptador, 2 nativo, 1 sem SKILL.md) |
 | adapt-instructions.sh | passou em dry-run no CLAUDE.md global (71 linhas portáteis, 7 resíduo) |
 | init-core.sh + check.sh em clone isolado | passou |
@@ -124,6 +133,7 @@ Preencha os campos entre colchetes, mantenha `MODE: audit` na primeira rodada, l
 |---|---|
 | `PLANO.md` | análise dos docs + auditoria desta máquina + passos e critérios de aceite |
 | `prompts/` | Prompt A, Prompt B, readback/handoff, quick-starts, em texto copiável |
+| `scripts/doctor.sh` | diagnóstico do ambiente: ok / aviso / falta, com o que instalar |
 | `scripts/audit.sh` | inventário somente leitura Claude x Codex → matriz reutilizável / adaptador / nativo |
 | `scripts/adapt-instructions.sh` | CLAUDE.md → AGENTS.md (portátil) + CLAUDE.md (`@AGENTS.md` + resíduo) |
 | `scripts/init-core.sh` | copia `template/` pra um projeto sem sobrescrever nada existente |
