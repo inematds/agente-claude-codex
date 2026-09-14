@@ -15,4 +15,4 @@ Kit de migração/agnosticismo: scripts de auditoria e adaptação + template de
 - Ver AGENTS.md (audit primeiro, sem cópia em massa, segredos fora).
 
 ## Hipóteses (não verificadas)
-- A classificação heurística de 73 skills como "reutilizável" está correta na maioria; precisa amostragem.
+- A classificação heurística de 71 skills como "reutilizável" está correta na maioria; precisa amostragem.

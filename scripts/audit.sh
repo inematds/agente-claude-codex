@@ -84,6 +84,5 @@ echo "- Classificação de skills é heurística por grep; revisar antes de migr
 } > "$OUT"
 
 echo "Relatório: $OUT"
-grep -cE '\| reutilizável' "$OUT" | xargs -I{} echo "  reutilizável: {}"
-grep -cE '\| adaptador' "$OUT" | xargs -I{} echo "  adaptador:    {}"
-grep -cE '\| nativo' "$OUT" | xargs -I{} echo "  nativo:       {}"
+SEC=$(sed -n '/### 2.1/,/^## 3/p' "$OUT")
+for c in reutilizável adaptador nativo "não resolvido"; do printf "  %-14s %s\n" "$c:" "$(grep -cE "\| $c \|" <<<"$SEC")"; done

@@ -17,7 +17,7 @@ Fontes: `docs/migrar-claude-para-codex-model-agnostic.md`, `docs/prompt-vs-texto
 | Codex CLI | 0.154.0, 27 skills em `~/.codex/skills` (≈ `~/.agents/skills`, 29), 0 MCP, hooks PostToolUse+Stop (impeccable) |
 | polyskill | 0.1.0 instalado (import/build/install cross-runtime) |
 | Import nativo | **Não existe no Codex CLI** (`codex --help` não tem `import`). O "Nível 1 um clique" do texto é o app desktop. O `npx migrate to codex` do texto é hipotético. |
-| Gap de skills | 89 só no Claude: 73 reutilizáveis (Markdown puro), 17 precisam adaptador (MCP/plugin do Claude), 4 nativas (hook) — heurística por grep, revisar |
+| Gap de skills | 89 só no Claude: 71 reutilizáveis (Markdown puro), 15 precisam adaptador (MCP/plugin do Claude), 2 nativas (hook), 1 sem SKILL.md — heurística por grep, revisar |
 | Subagentes | Sem equivalente 1:1 no Codex: classificar como nativo, virar skill de "papel" |
 | CLAUDE.md global | 71 linhas portáteis, 7 específicas do Claude (dry-run de `scripts/adapt-instructions.sh`) |
 
@@ -55,10 +55,10 @@ Fontes: `docs/migrar-claude-para-codex-model-agnostic.md`, `docs/prompt-vs-texto
 
 ## 7. Riscos e limites
 
-- Classificação de skills é heurística. 17 skills dependem de MCP/plugins (heygen, magnific, printing-press): no Codex só funcionam após registrar o MCP correspondente.
+- Classificação de skills é heurística. 15 skills dependem de MCP/plugins (heygen, magnific, printing-press): no Codex só funcionam após registrar o MCP correspondente.
 - Subagentes (`~/.claude/agents`) e plugins (superpowers, context-mode, claude-mem) não migram. Ficam como resíduo Claude.
 - `docs/` tem material de terceiros (post traduzido + prompt library datada de 07 SEP 2026). Está no `.gitignore` até decisão: repo privado, ou manter só as reescritas próprias.
-- Nenhum teste de readback foi rodado até a seção abaixo ser preenchida.
+- Evidência dos readbacks rodados está em `handoffs/latest.md` e `relatorios/`; tudo que não estiver lá conta como não rodado.
 
 ## 8. Evidência de execução
 
