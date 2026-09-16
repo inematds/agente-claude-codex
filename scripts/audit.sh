@@ -29,6 +29,9 @@ echo "| ~/.claude/agents | $(count "$CL/agents") subagentes |"
 echo "| ~/.claude/runbooks | $(count "$CL/runbooks") runbooks |"
 echo "| ~/.codex/skills | $(count "$CX/skills") skills |"
 echo "| ~/.agents/skills | $(count "$AG/skills") skills |"
+echo "| ~/projetos/dsh-skills (dsh-sandbox) | $(count "$HOME/projetos/dsh-skills") skills (cópias) |"
+echo "| ~/projetos/openpcbotv3/skills | $(count "$HOME/projetos/openpcbotv3/skills") skills próprias |"
+echo "| skills canônicas no kit (skills/) | $(count "$(dirname "$0")/../skills") |"
 echo "| Codex import nativo (CLI) | $(codex --help 2>/dev/null | grep -qi '^ *import' && echo 'sim' || echo 'não existe no CLI — só no app') |"
 echo
 echo "## 2. Skills: gap Claude → Codex"
@@ -53,6 +56,16 @@ while read -r s; do
   elif grep -qE 'hooks?\.(json|mjs|sh)|SessionStart|PreToolUse' "$f"; then echo "| $s | nativo | depende de hook |";
   else echo "| $s | reutilizável | Markdown + scripts comuns |"; fi
 done < /tmp/_gap.txt
+echo
+echo "### 2.2 Terceiro e quarto executores"
+echo
+echo "| Destino | Skills | Só lá (não canônicas) |"
+echo "|---|---|---|"
+for pair in "dsh:$HOME/projetos/dsh-skills" "v3:$HOME/projetos/openpcbotv3/skills"; do n=${pair%%:*}; d=${pair#*:}
+  [ -d "$d" ] || { echo "| $n | ausente | — |"; continue; }
+  only=$(comm -23 <(listdir "$d") <(listdir "$(dirname "$0")/../skills") | grep -v '^_' | tr '\n' ' ')
+  echo "| $n | $(count "$d") | ${only:-nenhuma} |"
+done
 echo
 echo "## 3. Comandos, subagentes, hooks, plugins"
 echo

@@ -62,4 +62,14 @@ Fontes: `docs/migrar-claude-para-codex-model-agnostic.md`, `docs/prompt-vs-texto
 
 ## 8. Evidência de execução
 
-Ver `handoffs/latest.md` (atualizado a cada rodada).
+Ver `handoffs/latest.md` (atualizado a cada rodada). Estado em 2026-09-16:
+
+| Fase (diagnóstico no wifi) | Estado |
+|---|---|
+| 0 Base global do Codex | **feita**: `~/.codex/AGENTS.md`, MCP magnific/metricool registrados (login OAuth é do usuário) |
+| 1 Piloto de skill | **feita**: session-handoff + prime, drift zero em claude/codex/dsh/v3 |
+| 2 Os 13 projetos trusted | ferramenta pronta (`migrar-projeto.sh`, `faxina.sh`); audit rodado no wifi; nenhum aplicado |
+| 3 Auditoria dos 39 com os dois arquivos | não iniciada (`drift-instructions.sh` cobre só o global) |
+| 4 Skills em lote | ferramenta pronta; só 2 canônicas + 3 espelhadas |
+| 5 Memória curada | ferramenta pronta (`promover-memoria.sh`), testada; nenhum projeto real promovido |
+| 6 dsh como executor | skills prime/session-handoff instaladas no dsh; readback no dsh **não rodado** (só painel web) |

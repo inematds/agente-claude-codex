@@ -82,16 +82,19 @@ Copia `template/` sem sobrescrever o que já existe e lista o que criou e o que 
 
 Esses nomes são convenção: nenhum runtime os carrega sozinho. O `AGENTS.md` do template já diz ao agente pra ler nessa ordem.
 
-### 4. Portar uma skill com fonte única
+### 4. Portar uma skill com fonte única (quatro destinos)
 
 ```bash
-scripts/sync-skills.sh import session-handoff   # ~/.claude/skills/session-handoff → skills/session-handoff/ (formato polyskill)
-scripts/sync-skills.sh build                    # gera skills/*/dist/claude e dist/codex
-scripts/sync-skills.sh install session-handoff --both   # copia pros runtimes (backup ao lado se já existia)
-scripts/sync-skills.sh drift                    # [ok] ou [DRIFT] por runtime
+scripts/sync-skills.sh targets                        # claude, codex, dsh (dsh-sandbox), v3 (openpcbotv3): existem?
+scripts/sync-skills.sh import session-handoff         # ~/.claude/skills/<skill> → skills/<skill>/ (formato polyskill)
+scripts/sync-skills.sh build                          # gera skills/*/dist/claude e dist/codex
+scripts/sync-skills.sh install session-handoff --all  # claude + codex + dsh + v3 (ou escolha: --claude --codex --dsh --v3)
+scripts/sync-skills.sh drift                          # [ok] / [DRIFT] / [não instalada] por destino
+scripts/sync-skills.sh mirror formato-curso-v5 --dsh  # skill cuja fonte mora em outro repo: espelha e vigia
+scripts/sync-skills.sh mirror-drift                   # drift das espelhadas
 ```
 
-Piloto recomendado: `session-handoff`, porque é o mecanismo do ciclo diário (sessão → handoff → nova sessão lê o handoff). Use `--codex` ou `--claude` no install pra um runtime só.
+O kit já traz duas skills canônicas em `skills/`: `session-handoff` (escreve o handoff no fim da sessão) e `prime` (lê AGENTS.md, context/, tasks/ e handoffs/ antes de agir e devolve um briefing com fontes). Juntas, são o ciclo diário. Backups de instalação vão para `~/.claude/skills-backup/` e `~/.codex/skills-backup/`, nunca dentro da pasta de skills.
 
 ### 5. Provar com sessão nova em cada runtime
 
@@ -103,7 +106,29 @@ Abre uma sessão nova no Claude (`claude -p`) e no Codex (`codex exec`) dentro d
 
 Aprovação é sua, lendo o texto: as respostas citam `AGENTS.md`, `tasks/current.md` e `handoffs/latest.md`, e a próxima ação bate com a tarefa. Arquivo existir não é prova; o agente ter lido e usado é.
 
-### 6. Fechar a sessão com handoff
+### 6. Migrar um projeto inteiro de uma vez
+
+```bash
+scripts/migrar-projeto.sh ~/projetos/<seu-projeto> --faxina            # audit: propostas + relatório, nada muda
+scripts/migrar-projeto.sh ~/projetos/<seu-projeto> --aplicar            # renomeia, instala núcleo, check, readback nos dois
+```
+
+### 7. Promover memória para o contexto (com aprovação)
+
+```bash
+scripts/promover-memoria.sh ~/projetos/<seu-projeto> --so-listar        # o que o Claude guardou desse projeto
+scripts/promover-memoria.sh ~/projetos/<seu-projeto> --n 3              # um runtime propõe 3 fatos com fonte e data
+scripts/promover-memoria.sh ~/projetos/<seu-projeto> --aprovar 1,3      # só o aprovado entra em context/overview.md
+```
+
+### 8. Vigiar o drift toda semana
+
+```bash
+scripts/drift-report.sh          # skills (4 destinos), espelhadas e AGENTS.md global; grava relatorios/drift-<data>.md
+scripts/drift-report.sh --cron   # linha de crontab sugerida (não instala)
+```
+
+### 9. Fechar a sessão com handoff
 
 No fim de cada sessão, atualize `handoffs/latest.md` e `tasks/current.md`. Na próxima sessão, em qualquer runtime, o agente começa lendo esses dois. Os prompts de handoff e readback estão em `prompts/03-readback-handoff.md`.
 
@@ -118,7 +143,7 @@ No fim de cada sessão, atualize `handoffs/latest.md` e `tasks/current.md`. Na p
 
 Preencha os campos entre colchetes, mantenha `MODE: audit` na primeira rodada, leia o plano que o agente devolve, e só então rode de novo com `MODE: implement`.
 
-## O que já foi testado nesta máquina (2026-09-13)
+## O que já foi testado nesta máquina (2026-09-13 e 2026-09-16)
 
 | Passo | Resultado |
 |---|---|
@@ -127,7 +152,12 @@ Preencha os campos entre colchetes, mantenha `MODE: audit` na primeira rodada, l
 | adapt-instructions.sh | passou em dry-run no CLAUDE.md global (71 linhas portáteis, 7 resíduo) |
 | init-core.sh + check.sh em clone isolado | passou |
 | readback-test.sh neste repo | passou no Codex e no Claude, com as respostas em `relatorios/` |
-| sync-skills.sh | **não rodado** ainda |
+| sync-skills.sh (2026-09-16) | passou: session-handoff e prime instaladas em claude, codex, dsh e v3, drift zero; 3 skills espelhadas no dsh sem drift |
+| Fase 0 (2026-09-16) | passou: `~/.codex/AGENTS.md` gerado; sessão nova do Codex citou autor, keys e regra de ritmo com arquivo e linha; magnific e metricool registrados no Codex (login OAuth pendente: `codex mcp login <nome>`) |
+| prime em sessão nova do Codex (2026-09-16) | passou: briefing com fontes e apontou 3 contradições reais entre handoff e tarefa |
+| migrar-projeto.sh em audit no wifi (2026-09-16) | passou (relatório em relatorios/) |
+| promover-memoria.sh com 50 memórias (2026-09-16) | passou: 3 fatos propostos, 1 aprovado entrou no overview de teste |
+| drift-report.sh (2026-09-16) | passou: sem drift |
 
 ## O que tem aqui
 
@@ -141,6 +171,12 @@ Preencha os campos entre colchetes, mantenha `MODE: audit` na primeira rodada, l
 | `scripts/init-core.sh` | copia `template/` pra um projeto sem sobrescrever nada existente |
 | `scripts/sync-skills.sh` | import / build / install / drift de skills via polyskill (uma fonte canônica) |
 | `scripts/readback-test.sh` | teste de continuidade: sessão nova em cada runtime responde as 5 perguntas |
+| `scripts/migrar-projeto.sh` | encadeia adapt → init-core → check → readback num projeto e grava `relatorios/migracao-<projeto>.md` (audit por padrão, `--aplicar` para valer) |
+| `scripts/faxina.sh` | classifica cada seção de um CLAUDE.md longo: fica no AGENTS.md, vira `context/`, ou é resíduo |
+| `scripts/drift-report.sh` | relatório de drift: skills canônicas nos 4 destinos, skills espelhadas e AGENTS.md global; `--cron` mostra a linha semanal |
+| `scripts/drift-instructions.sh` | avisa quando `~/.claude/CLAUDE.md` mudou depois do `~/.codex/AGENTS.md` ou quando falta regra portátil lá |
+| `scripts/promover-memoria.sh` | lista a memória nativa do Claude de um projeto, um runtime propõe até N fatos com fonte e data, e só `--aprovar` grava no `context/overview.md` |
+| `skills/` | skills canônicas em formato polyskill: `session-handoff` (escreve o handoff) e `prime` (lê o contexto antes de agir) |
 | `template/` | núcleo portátil (AGENTS.md, CLAUDE.md, context/, tasks/, handoffs/, .agents/skills/, scripts/check.sh) |
 | `relatorios/` | saída das auditorias e readbacks |
 | `context/`, `tasks/`, `handoffs/` | o próprio repo usa o núcleo que propõe |
