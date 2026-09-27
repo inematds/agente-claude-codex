@@ -7,6 +7,7 @@ Onboarding humano. O agente lê `AGENTS.md` primeiro.
 ## Estrutura
 - `context/` — conhecimento durável (overview, current-state, sources, decisions/)
 - `tasks/current.md` — o que está sendo feito, dono, critério de pronto
-- `handoffs/latest.md` — continuação para a próxima sessão
+- `handoffs/latest.md` — continuação para a próxima sessão (cópia do último snapshot)
+- `handoffs/history/` — um snapshot por handoff, nunca sobrescrito
 - `.agents/skills/` — skills canônicas
 - `scripts/` — comandos reproduzíveis

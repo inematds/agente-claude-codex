@@ -17,4 +17,4 @@
 | Estado atual | context/current-state.md | agente | fim de sessão |
 | Decisões aceitas | context/decisions/AAAA-MM-DD-*.md | humano aceita | ao decidir |
 | Tarefa atual | tasks/current.md | humano define, agente marca | por tarefa |
-| Handoff | handoffs/latest.md | agente | fim de sessão |
+| Handoff | handoffs/history/<UTC>.md + cópia em handoffs/latest.md | agente | fim de sessão |

@@ -23,6 +23,11 @@ supports it.
 
 ```
 
+Neste kit, o handoff vai para um arquivo novo `handoffs/history/AAAA-MM-DDTHHMMSSZ.md` (nunca
+sobrescrito) e é copiado para `handoffs/latest.md`, com as seções "Verificação" (o que rodou, o
+resultado observado e o que não rodou) e "Checagem de compartilhamento". Ver a skill
+`session-handoff` e `prompts/05-usar-os-dois.md` (prompts 5 e 6).
+
 ## Required evidence
 
 ```text

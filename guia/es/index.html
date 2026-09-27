@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>agente-claude-codex — Migrar de Claude a Codex o quedarse agnóstico</title>
+<meta name="description" content="Kit para migrar una configuración de Claude Code a Codex o dejar el trabajo independiente del modelo: auditoría, adaptadores, núcleo portátil y prueba de continuidad.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0c10; --bg2:#14141b; --card:#16161e; --line:#272730;
+    --txt:#e9e9ee; --mut:#9a9aa6; --amb:#E2A23B; --amb2:#f0c070; --sky:#38bdf8; --pro:#cbd5e1;
+    color-scheme:dark;
+  }
+  body.light{
+    --bg:#f6f7f9; --bg2:#eceef2; --card:#ffffff; --line:#e1e3ea;
+    --txt:#1a1a22; --mut:#5b5b68; --amb:#b9791d; --amb2:#a16207; --sky:#0369a1; --pro:#b45309;
+    color-scheme:light;
+  }
+  body.light .hero .glow{opacity:.5}
+  body.light pre{background:#0e0e14;color:#d6d6e0}
+  body.light pre .c{color:#8a8a98}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.65 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:Sora,sans-serif;line-height:1.15;margin:0}
+  a{color:var(--amb);text-decoration:none}
+  code,pre{font-family:"JetBrains Mono",monospace}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 22px}
+  .mut{color:var(--mut)} .amb{color:var(--amb)}
+  .chip{display:inline-block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amb);font-weight:600;font-family:Sora}
+  nav{position:sticky;top:0;z-index:30;backdrop-filter:blur(12px);background:rgba(12,12,16,.78);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;gap:22px;height:60px}
+  nav .brand{display:flex;align-items:center;gap:8px;font-family:Sora;font-weight:800;letter-spacing:-.02em;color:var(--amb)}
+  nav .brand .emoji{font-size:1.25rem}
+  nav .sep{color:var(--mut);opacity:.45}
+  nav .inema{color:var(--sky);font-weight:600;font-size:.88rem;font-family:Sora}
+  nav .inema:hover{filter:brightness(1.15)}
+  nav .pro{color:var(--pro);font-weight:600;font-size:.88rem;font-family:Sora}
+  nav .pro:hover{filter:brightness(1.15)}
+  nav .clubpro{display:inline-flex;align-items:center;gap:6px}
+  nav .links{margin-left:auto;display:flex;align-items:center;gap:20px;font-size:.92rem}
+  nav .links a.sec{color:var(--mut)} nav .links a.sec:hover{color:var(--txt)}
+  .tgl{background:var(--bg2);border:1px solid var(--line);color:var(--txt);width:38px;height:38px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem}
+  .tgl:hover{border-color:var(--amb)}
+  .btn{display:inline-block;background:var(--amb);color:#1a1206;font-weight:600;padding:.6em 1.05em;border-radius:10px;font-family:Sora}
+  .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
+  @media(max-width:760px){nav .links a.sec{display:none}}
+  @media(max-width:600px){nav .wrap{gap:10px} nav .links{gap:8px} nav .links a.btn,nav .sep{display:none} nav .brand{font-size:.9rem}}
+  @media(max-width:480px){nav .clubpro{display:none} nav .brand .emoji{display:none}}
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+  .hero .glow{position:absolute;inset:-40% -20% auto auto;width:70%;height:600px;background:radial-gradient(closest-side,rgba(226,162,59,.22),transparent 70%);pointer-events:none}
+  .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:74px 22px}
+  .hero h1{font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;letter-spacing:-.025em}
+  .hero p.lead{font-size:1.18rem;color:var(--mut);margin:1.1em 0 1.6em;max-width:34ch}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .hero figure{margin:0;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px -30px #000}
+  .hero figure img{width:100%;display:block}
+  @media(max-width:780px){.hero .wrap{grid-template-columns:1fr;padding:48px 22px}}
+  section{padding:62px 0;border-bottom:1px solid var(--line)}
+  section h2{font-size:clamp(1.5rem,3.4vw,2.1rem);font-weight:800;letter-spacing:-.02em}
+  section .sub{color:var(--mut);margin:.6em 0 2em;max-width:62ch}
+  .grid{display:grid;gap:16px}
+  .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:820px){.g3,.g4{grid-template-columns:1fr 1fr}}
+  @media(max-width:540px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .card h3{font-size:1.05rem;margin-bottom:.4em}
+  .card p{color:var(--mut);font-size:.92rem;margin:0}
+  .num{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:8px;background:rgba(226,162,59,.14);color:var(--amb);font-family:Sora;font-weight:800;font-size:.9rem;margin-bottom:.7em}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+  .flow span{background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:.45em .9em;font-size:.85rem;font-family:Sora;font-weight:600}
+  .flow .arr{color:var(--amb);border:none;background:none;padding:0 .1em}
+  pre{background:#0a0a0e;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow:auto;font-size:.86rem;line-height:1.6;color:#d6d6e0}
+  pre .c{color:#6f6f7c} pre .k{color:var(--amb2)} pre .s{color:#9ece6a}
+  .step{display:grid;grid-template-columns:46px 1fr;gap:16px;margin-bottom:26px}
+  .step .b{width:46px;height:46px;border-radius:12px;background:var(--amb);color:#1a1206;font-family:Sora;font-weight:800;font-size:1.25rem;display:flex;align-items:center;justify-content:center}
+  .step>div,.grid>.card{min-width:0}
+  .step h3{font-size:1.12rem;margin-bottom:.3em}
+  .step p{color:var(--mut);margin:.2em 0 .7em}
+  .ex{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:680px){.ex{grid-template-columns:1fr}}
+  .ex figure{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+  .ex figure img{width:100%;display:block}
+  .ex figcaption{padding:12px 14px;font-size:.88rem;color:var(--mut);background:var(--card)}
+  .phase{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+  .phase:last-child{border:none}
+  .phase .tag{flex:0 0 92px;font-family:Sora;font-weight:800;color:var(--amb)}
+  .phase .d strong{display:block;margin-bottom:.2em}
+  .phase .d span{color:var(--mut);font-size:.92rem}
+  footer{padding:46px 0;text-align:center;color:var(--mut);font-size:.9rem}
+  .pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:.3em .8em;font-size:.78rem;color:var(--mut);margin:0 4px}
+  .lang{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:.78rem;font-family:Sora;font-weight:600}
+  .lang a{padding:.35em .6em;color:var(--mut)} .lang a.on{background:var(--amb);color:#1a1206}
+  .tbl{width:100%;border-collapse:collapse;font-size:.9rem;margin:6px 0 26px}
+  .tbl th,.tbl td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+  .tbl th{font-family:Sora;color:var(--amb);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase}
+  .tbl td:first-child{font-weight:600}
+  .tblwrap{overflow-x:auto}
+  .note{border-left:3px solid var(--amb);background:var(--card);padding:12px 16px;border-radius:0 10px 10px 0;color:var(--mut);font-size:.92rem;margin:0 0 22px}
+  .credit{font-size:.85rem;color:var(--mut);margin-top:18px}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="brand" href="#top"><span class="emoji">🧠</span> agente-claude-codex</a>
+  <span class="sep">|</span>
+  <span class="clubpro">
+    <a class="inema" href="https://inema.club" target="_blank" rel="noopener">INEMA.CLUB</a>
+    <span class="sep">-</span>
+    <a class="pro" href="https://inema.pro" target="_blank" rel="noopener">PRO</a>
+  </span>
+  <div class="links">
+    <a class="sec" href="#oque">Qué es</a>
+    <a class="sec" href="#fluxo">Cómo funciona</a>
+    <a class="sec" href="#guia">Guía de uso</a>
+    <a class="sec" href="#juntos">Usar los dos</a>
+    <a class="sec" href="#exemplos">Ejemplos</a>
+    <a class="sec" href="#roadmap">Hoja de ruta</a>
+    <span class="lang"><a href="../" hreflang="pt-BR">PT</a><a href="../en/" hreflang="en">EN</a><a class="on" href="./" hreflang="es">ES</a></span>
+    <button class="tgl" id="themeToggle" aria-label="Cambiar tema" title="Cambiar tema">🌙</button>
+    <a class="btn" href="https://github.com/inematds/agente-claude-codex" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</div></nav>
+
+<header class="hero" id="top">
+  <div class="glow"></div>
+  <div class="wrap">
+    <div>
+      <span class="chip">Claude Code → Codex · workspace agnóstico</span>
+      <h1>No migres el cerebro. <span class="amb">Separa</span> el cerebro del modelo.</h1>
+      <p class="lead">Kit de auditoría, adaptadores y núcleo portátil para llevar tu configuración de Claude Code a Codex, o para que contexto, decisiones, tareas y skills funcionen con cualquier modelo.</p>
+      <div class="cta">
+        <a class="btn" href="#guia">Empezar la guía</a>
+        <a class="btn ghost" href="https://github.com/inematds/agente-claude-codex" target="_blank" rel="noopener">Ver en GitHub</a>
+      </div>
+    </div>
+    <figure><img src="../assets/banner.jpg" alt="Agente Claude → Codex: migra o quédate agnóstico"></figure>
+  </div>
+</header>
+
+<section id="oque"><div class="wrap">
+  <span class="chip">Qué es</span>
+  <h2>Un comando para auditar, adaptar y probar la migración</h2>
+  <p class="sub">La newsletter habla de tres niveles: importar en la app (un clic), ejecutar un comando y cuidar la capa personal duradera. Este repo es el nivel 2 y el nivel 3, con scripts que empiezan en modo audit y solo después cambian algo.</p>
+  <div class="grid g3">
+    <div class="card"><h3>🔍 Auditoría de solo lectura</h3><p>Inventaría skills, comandos, subagentes, hooks, plugins y MCP de Claude y de Codex y clasifica cada ítem: reutilizable, adaptador, nativo o no resuelto. Nada se copia en masa.</p></div>
+    <div class="card"><h3>🧩 Adaptadores pequeños</h3><p>CLAUDE.md se convierte en un AGENTS.md portátil más un residuo específico de Claude. Las skills tienen una fuente canónica y copias generadas por runtime con control de drift.</p></div>
+    <div class="card"><h3>✅ Prueba de continuidad</h3><p>Una sesión nueva en cada runtime responde: objetivo, regla y fuente, última decisión, próxima acción, conflictos. Que el archivo exista no es prueba. Que el agente lo haya leído y usado, sí.</p></div>
+  </div>
+</div></section>
+
+<section id="fluxo"><div class="wrap">
+  <span class="chip">Cómo funciona</span>
+  <h2>Auditar → organizar → adaptar → probar → handoff</h2>
+  <p class="sub">El núcleo (contexto, decisiones, tareas, skills, handoffs) queda en Markdown común dentro del proyecto. En los bordes, un adaptador por herramienta. Claude, Codex, Gemini o un modelo local pasan a ser solo ejecutores.</p>
+  <div class="flow">
+    <span>doctor.sh</span><span class="arr">→</span>
+    <span>audit.sh</span><span class="arr">→</span>
+    <span>adapt-instructions.sh</span><span class="arr">→</span>
+    <span>init-core.sh</span><span class="arr">→</span>
+    <span>sync-skills.sh</span><span class="arr">→</span>
+    <span>readback-test.sh</span><span class="arr">→</span>
+    <span>handoffs/latest.md</span>
+  </div>
+  <div class="grid g3" style="margin-top:26px">
+    <div class="card"><h3>📁 Núcleo portátil</h3><p>AGENTS.md, context/overview.md, context/current-state.md, context/sources.md, context/decisions/, tasks/current.md, handoffs/latest.md, .agents/skills/, scripts/.</p></div>
+    <div class="card"><h3>🏷️ Dueño por tipo de información</h3><p>Instrucciones estables, estado actual, decisiones, tareas y handoffs tienen dueño y regla de actualización. Hecho, preferencia, hipótesis y decisión son cosas distintas.</p></div>
+    <div class="card"><h3>🔁 Ciclo diario</h3><p>Sesión → handoff en Markdown → la nueva sesión lee el handoff (prime). El resumen estructurado viaja a cualquier proveedor.</p></div>
+  </div>
+</div></section>
+
+<section id="pre"><div class="wrap">
+  <span class="chip">Requisitos previos</span>
+  <h2>Qué necesita estar instalado</h2>
+  <p class="sub">Los scripts leen las carpetas de configuración de los dos runtimes. Si falta uno, el paso correspondiente queda marcado como no ejecutado.</p>
+  <div class="grid g3">
+    <div class="card"><h3>Claude Code</h3><p>Fuente de la migración. Skills en ~/.claude/skills.</p><pre><span class="c"># versión</span>
+<span class="k">claude</span> --version</pre></div>
+    <div class="card"><h3>Codex CLI</h3><p>Destino. Skills en ~/.agents/skills. El CLI no tiene import nativo.</p><pre><span class="c"># versión y diagnóstico</span>
+<span class="k">codex</span> --version
+<span class="k">codex</span> doctor</pre></div>
+    <div class="card"><h3>polyskill</h3><p>Convierte una skill en una fuente portátil y genera las copias por runtime.</p><pre><span class="c"># instalar</span>
+<span class="k">npm</span> i -g polyskill</pre></div>
+  </div>
+</div></section>
+
+<section id="guia"><div class="wrap">
+  <span class="chip">Guía de uso · paso a paso</span>
+  <h2>Del diagnóstico a la prueba en siete pasos</h2>
+  <p class="sub">Cada paso es reversible. Instalar una skill es una vista previa hasta que pases --apply, y reemplazarla hace un backup antes. Los secretos nunca entran al repo.</p>
+
+  <div class="step"><div class="b">0</div><div>
+    <h3>Clonar y diagnosticar el entorno</h3>
+    <p>Responde "¿mi entorno está listo?": git, python3, node, Claude Code, Codex CLI, sandbox, MCP, polyskill. Cada ítem sale como ok, aviso o falta, con el comando para resolverlo.</p>
+<pre><span class="k">git</span> clone <span class="s">https://github.com/inematds/agente-claude-codex</span>
+<span class="k">cd</span> agente-claude-codex
+<span class="k">scripts/doctor.sh</span>  <span class="c"># [ok] / [aviso] / [FALTA]</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">1</div><div>
+    <h3>Auditar lo que existe</h3>
+    <p>Genera un informe en Markdown con versiones, la brecha de skills y la matriz reutilizable / adaptador / nativo. Solo lectura.</p>
+<pre><span class="k">scripts/audit.sh</span>  <span class="c"># relatorios/auditoria-AAAA-MM-DD.md</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">2</div><div>
+    <h3>Separar las instrucciones portátiles del residuo de Claude</h3>
+    <p>Lee el CLAUDE.md del proyecto y propone un AGENTS.md portátil y un CLAUDE.md que importa el AGENTS.md. Los guarda como .proposto.md para que los revises.</p>
+<pre><span class="k">scripts/adapt-instructions.sh</span> ~/proyectos/mi-proyecto
+<span class="c"># revisar AGENTS.proposto.md y CLAUDE.proposto.md, luego renombrar</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">3</div><div>
+    <h3>Instalar el núcleo portátil en el proyecto</h3>
+    <p>Copia la plantilla (context/, tasks/, handoffs/, AGENTS.md) sin sobrescribir nada que ya exista.</p>
+<pre><span class="k">scripts/init-core.sh</span> ~/proyectos/mi-proyecto
+<span class="c"># luego completar AGENTS.md, context/overview.md y tasks/current.md</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">4</div><div>
+    <h3>Portar una skill con fuente canónica</h3>
+    <p>Piloto recomendado: session-handoff, el mecanismo en el que se apoya el ciclo diario. Importa, genera las copias, instala y revisa el drift. El install es vista previa por defecto: revisa todos los destinos antes de escribir, es idempotente y rechaza symlinks o una skill existente distinta.</p>
+<pre><span class="k">scripts/sync-skills.sh</span> import session-handoff
+<span class="k">scripts/sync-skills.sh</span> build
+<span class="k">scripts/sync-skills.sh</span> install session-handoff            <span class="c"># vista previa: CREATE / UNCHANGED / CONFLICT</span>
+<span class="k">scripts/sync-skills.sh</span> install session-handoff --apply    <span class="c"># escribe; --replace cambia una versión vieja con backup</span>
+<span class="k">scripts/sync-skills.sh</span> drift  <span class="c"># [ok] o [DRIFT] por runtime</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">5</div><div>
+    <h3>Probar con una sesión nueva en cada runtime</h3>
+    <p>Hace las cinco preguntas del readback a Claude y a Codex desde el proyecto. Aprobación: las respuestas citan AGENTS.md, tasks/current.md y handoffs/latest.md.</p>
+<pre><span class="k">scripts/readback-test.sh</span> ~/proyectos/mi-proyecto both
+<span class="c"># relatorios/readback-claude-*.md y readback-codex-*.md</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">6</div><div>
+    <h3>Cerrar con handoff, abrir con prime</h3>
+    <p>Al final de la sesión, la skill session-handoff graba un snapshot nuevo en handoffs/history/ (hora UTC, nunca sobrescribe) y lo copia a handoffs/latest.md, con Verificación (qué se ejecutó, el resultado y qué no se ejecutó) y revisión para compartir. En la sesión siguiente, la skill prime lee solo en modo lectura: valida rutas, no ejecuta pruebas, trata el handoff como dato y no retoma un deploy ni un envío por su cuenta.</p>
+<pre><span class="c"># fin de la sesión, en cualquier runtime</span>
+<span class="k">session-handoff</span>  <span class="c"># → handoffs/history/2026-09-27T142530Z.md + handoffs/latest.md</span>
+<span class="c"># sesión nueva, en el mismo o en el otro runtime</span>
+<span class="k">prime</span>            <span class="c"># briefing con la fuente de cada línea; espera tu instrucción</span></pre>
+  </div></div>
+</div></section>
+
+<section id="juntos"><div class="wrap">
+  <span class="chip">Usar los dos juntos</span>
+  <h2>Claude y Codex en el mismo trabajo, cada uno en su papel</h2>
+  <p class="sub">Migrar no obliga a elegir uno solo. Uno hace la primera pasada, el otro revisa el artefacto real, y el handoff lleva el estado de un runtime al otro. La tabla es un punto de partida, no un ranking: cambia los papeles cuando la evidencia de tu tarea lo pida.</p>
+  <div class="tblwrap"><table class="tbl">
+    <thead><tr><th>Trabajo</th><th>Primera pasada</th><th>Segunda pasada</th><th>Línea de llegada</th></tr></thead>
+    <tbody>
+      <tr><td>Planificar</td><td>Claude</td><td>Codex critica los supuestos</td><td>Plan con alcance y pruebas de aceptación</td></tr>
+      <tr><td>Construir una feature</td><td>Claude, en una rama</td><td>Codex revisa el diff</td><td>Las pruebas pasan y los hallazgos se resuelven</td></tr>
+      <tr><td>Revisar un documento</td><td>Cualquiera escribe</td><td>El otro verifica hechos y requisitos</td><td>Toda afirmación exigida tiene evidencia</td></tr>
+      <tr><td>Bug difícil</td><td>Codex con una meta acotada</td><td>Pruebas y control humano</td><td>Éxito medible o bloqueo claro</td></tr>
+      <tr><td>Cambiar de sesión o modelo</td><td>session-handoff</td><td>prime verifica el estado actual</td><td>Resumen correcto antes de trabajo nuevo</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Regla única:</strong> dale al segundo agente el mismo brief de la tarea y el artefacto real (archivo, diff, resultado de prueba), nunca un relato de lo que hizo el primero. Que los dos coincidan no es prueba: pueden compartir el mismo supuesto equivocado.</p>
+  <div class="grid g2">
+    <div class="card"><h3>1. Planificar y criticar</h3><p>Uno escribe el plan (alcance, supuestos, pruebas de aceptación, riesgos); el otro lo revisa en solo lectura con el mismo brief. Cada hallazgo queda aceptado, rechazado con evidencia o abierto. Dos rondas como máximo.</p></div>
+    <div class="card"><h3>2. Construir y revisar el diff</h3><p>El constructor trabaja en una rama nueva, preserva los cambios existentes y ejecuta las pruebas. El revisor recibe el brief, el diff y los resultados y busca bugs y regresiones antes que estética. Sin merge, deploy ni publicación sin ti.</p></div>
+    <div class="card"><h3>3. Meta con condición de parada</h3><p>Objetivo observable (qué suite, qué entrada, qué salida), alcance acotado, detente cuando pase. Si el mismo bloqueo sobrevive a dos intentos, informa y pide la decisión. Un tope real de tiempo o costo se configura en el entorno, no en el prompt.</p></div>
+    <div class="card"><h3>4. Handoff y prime entre runtimes</h3><p>Quien sale graba el snapshot en handoffs/history/ y actualiza handoffs/latest.md; quien llega ejecuta prime, verifica el estado sin cambiar nada y espera la instrucción actual. Una sola suscripción también sirve: una segunda sesión revisa con los mismos archivos.</p></div>
+  </div>
+<pre style="margin-top:22px"><span class="c"># los prompts listos (en portugués), con campos para completar</span>
+<span class="k">cat</span> prompts/05-usar-os-dois.md
+<span class="c"># revisión de solo lectura por el otro runtime (por la suscripción, nunca por API paga)</span>
+<span class="k">codex</span> exec --sandbox read-only <span class="s">"Revisa plans/tarea-v1.md contra tasks/current.md ..."</span>
+<span class="k">claude</span> -p <span class="s">"Revisa el diff de git diff main...HEAD contra el brief ..."</span></pre>
+  <p class="credit">Adaptado del kit "Use Both: Claude + Codex Workflow Kit" de Prompt Advisers / Mark Kashef, licencia MIT. <a href="https://inematds.github.io/use-both-claude-codex/guia/">Guía del kit</a> · <a href="https://github.com/inematds/use-both-claude-codex">repositorio</a>.</p>
+</div></section>
+
+<section id="exemplos"><div class="wrap">
+  <span class="chip">Ejemplos</span>
+  <h2>Ejecutado de verdad en esta máquina</h2>
+  <p class="sub">La auditoría encontró 89 skills solo en Claude: 71 portátiles, 15 dependientes de MCP o plugin, 2 de hook. El readback se aprobó en Codex y en Claude, y Codex además señaló tres inconsistencias en el propio repo, todas corregidas.</p>
+  <div class="ex">
+    <figure><img src="../assets/ex1.jpg" alt="Claude a Codex: migrar o quedarse agnóstico"><figcaption>La idea de origen: conocimiento portátil en el medio, Claude y Codex en los bordes como ejecutores.</figcaption></figure>
+    <figure><img src="../assets/ex2.jpg" alt="Portada del proyecto agente-claude-codex"><figcaption>Portada oficial del proyecto en el catálogo INEMA.</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="roadmap"><div class="wrap">
+  <span class="chip">Hoja de ruta</span>
+  <h2>Del piloto al workspace completo</h2>
+  <p class="sub">Solo se avanza de fase con evidencia: pasó, falló o no se ejecutó.</p>
+  <div class="phase"><div class="tag">Hecho</div><div class="d"><strong>Auditoría, prompts, plantilla y readback</strong><span>Scripts de auditoría y adaptación, prompts A/B extraídos, núcleo portátil, readback aprobado en los dos runtimes.</span></div></div>
+  <div class="phase"><div class="tag">Hecho</div><div class="d"><strong>Skill piloto en los 4 ejecutores</strong><span>session-handoff y prime vía polyskill en Claude, Codex, dsh-sandbox y openpcbotv3, drift cero; AGENTS.md global de Codex; migrar-projeto, faxina, drift-report y promover-memoria.</span></div></div>
+  <div class="phase"><div class="tag">v1.1.0</div><div class="d"><strong>Historial de handoff y uso conjunto</strong><span>prime de solo lectura y con rutas validadas, snapshots en handoffs/history/ que nunca se sobrescriben, instalador de skills en modo vista previa con prueba automatizada, prompts para usar Claude y Codex juntos.</span></div></div>
+  <div class="phase"><div class="tag">Fase 3</div><div class="d"><strong>Proyecto real</strong><span>Aplicarlo en un proyecto INEMA con su propio CLAUDE.md y probar una copia aislada.</span></div></div>
+  <div class="phase"><div class="tag">Fase 4</div><div class="d"><strong>MCP y hooks</strong><span>Registrar en Codex solo los MCP que un proyecto necesita; los hooks pasan a ser texto en AGENTS.md cuando no hay un evento equivalente.</span></div></div>
+</div></section>
+
+<footer>
+  <div class="wrap">
+    <div class="pill">v1.1.0</div><div class="pill">bash</div><div class="pill">polyskill</div><div class="pill">Markdown</div><div class="pill">Claude Code</div><div class="pill">Codex CLI</div>
+    <p style="margin-top:18px">agente-claude-codex · investigación y educación ·
+      <a href="https://github.com/inematds/agente-claude-codex">inematds/agente-claude-codex</a> ·
+      <a href="https://inema.club">INEMA.CLUB</a></p>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var KEY='agente-claude-codex-theme';
+    var b=document.body, t=document.getElementById('themeToggle');
+    if(localStorage.getItem(KEY)==='light'){ b.classList.add('light'); t.textContent='☀️'; }
+    t.addEventListener('click',function(){
+      var light=b.classList.toggle('light');
+      t.textContent=light?'☀️':'🌙';
+      localStorage.setItem(KEY, light?'light':'dark');
+    });
+  })();
+</script>
+</body>
+</html>

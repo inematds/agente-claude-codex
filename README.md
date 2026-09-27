@@ -23,7 +23,7 @@ Guia completo (landing + passo a passo): **https://inematds.github.io/agente-cla
 | Ferramenta | Pra quê | Como conferir |
 |---|---|---|
 | Claude Code | fonte da migração (`~/.claude/skills`, `CLAUDE.md`) | `claude --version` |
-| Codex CLI | destino (`~/.codex/skills`, `~/.agents/skills`, `AGENTS.md`) | `codex --version` e `codex doctor` |
+| Codex CLI | destino (`~/.agents/skills`, `AGENTS.md`) | `codex --version` e `codex doctor` |
 | polyskill | portar skill com fonte única pros dois runtimes | `npm i -g polyskill` |
 | bash, git, python3 | os scripts usam só isso | já vem no Linux/macOS |
 
@@ -78,7 +78,8 @@ Copia `template/` sem sobrescrever o que já existe e lista o que criou e o que 
 | `context/sources.md` | de onde vem cada informação e regra de refresh | humano |
 | `context/decisions/` | uma decisão aceita por arquivo | humano |
 | `tasks/current.md` | objetivo, dono, critério de pronto, próxima ação | humano define, agente marca |
-| `handoffs/latest.md` | continuação pra próxima sessão | agente, fim de sessão |
+| `handoffs/latest.md` | continuação pra próxima sessão (cópia do último snapshot) | agente, fim de sessão |
+| `handoffs/history/` | um snapshot por handoff, `AAAA-MM-DDTHHMMSSZ.md`, nunca sobrescrito | agente, fim de sessão |
 
 Esses nomes são convenção: nenhum runtime os carrega sozinho. O `AGENTS.md` do template já diz ao agente pra ler nessa ordem.
 
@@ -88,13 +89,21 @@ Esses nomes são convenção: nenhum runtime os carrega sozinho. O `AGENTS.md` d
 scripts/sync-skills.sh targets                        # claude, codex, dsh (dsh-sandbox), v3 (openpcbotv3): existem?
 scripts/sync-skills.sh import session-handoff         # ~/.claude/skills/<skill> → skills/<skill>/ (formato polyskill)
 scripts/sync-skills.sh build                          # gera skills/*/dist/claude e dist/codex
-scripts/sync-skills.sh install session-handoff --all  # claude + codex + dsh + v3 (ou escolha: --claude --codex --dsh --v3)
+scripts/sync-skills.sh install session-handoff --all  # PRÉVIA: CREATE / UNCHANGED / CONFLICT / SYMLINK / SKIP por destino
+scripts/sync-skills.sh install session-handoff --all --apply            # grava (só se nenhum destino tiver conflito)
+scripts/sync-skills.sh install session-handoff --all --apply --replace  # troca versão antiga, com backup
 scripts/sync-skills.sh drift                          # [ok] / [DRIFT] / [não instalada] por destino
 scripts/sync-skills.sh mirror formato-curso-v5 --dsh  # skill cuja fonte mora em outro repo: espelha e vigia
 scripts/sync-skills.sh mirror-drift                   # drift das espelhadas
 ```
 
-O kit já traz duas skills canônicas em `skills/`: `session-handoff` (escreve o handoff no fim da sessão) e `prime` (lê AGENTS.md, context/, tasks/ e handoffs/ antes de agir e devolve um briefing com fontes). Juntas, são o ciclo diário. Backups de instalação vão para `~/.claude/skills-backup/` e `~/.codex/skills-backup/`, nunca dentro da pasta de skills.
+O kit já traz duas skills canônicas em `skills/`: `session-handoff` (escreve o handoff no fim da sessão) e `prime` (lê AGENTS.md, context/, tasks/ e handoffs/ antes de agir e devolve um briefing com fontes). Juntas, são o ciclo diário. O `install` é **prévia por padrão**: mostra o destino e o estado de cada runtime e só grava com `--apply`. Ele checa todos os destinos antes de escrever qualquer um (nada parcial), é idempotente (skill igual = `UNCHANGED`, nada é regravado), recusa sobrescrever skill existente diferente (`CONFLICT`) a menos que você passe `--replace`, e recusa sempre destino que seja ou contenha symlink. Backups do `--replace` vão para `~/.claude/skills-backup/` e `~/.agents/skills-backup/`, nunca dentro da pasta de skills. O destino do Codex é `~/.agents/skills` (onde o Codex CLI lê skills de usuário).
+
+Teste automatizado do instalador (HOME temporário, não toca nos seus runtimes):
+
+```bash
+tests/test-sync-skills.sh   # 20 casos: prévia, apply, idempotência, conflito sem instalação parcial, --replace, symlinks
+```
 
 ### 5. Provar com sessão nova em cada runtime
 
@@ -130,7 +139,9 @@ scripts/drift-report.sh --cron   # linha de crontab sugerida (não instala)
 
 ### 9. Fechar a sessão com handoff
 
-No fim de cada sessão, atualize `handoffs/latest.md` e `tasks/current.md`. Na próxima sessão, em qualquer runtime, o agente começa lendo esses dois. Os prompts de handoff e readback estão em `prompts/03-readback-handoff.md`.
+No fim de cada sessão, a skill `session-handoff` grava um snapshot novo em `handoffs/history/AAAA-MM-DDTHHMMSSZ.md` (hora UTC, sufixo `-2` em colisão, **nunca sobrescreve**) e copia o conteúdo para `handoffs/latest.md`. O handoff traz a seção **Verificação** (comandos exatos, resultado observado e o que não rodou; teste não rodado nunca vira "passou") e a **Checagem de compartilhamento** (sem segredos nem dados pessoais, porque o arquivo viaja entre provedores). Atualize também `tasks/current.md`.
+
+Na próxima sessão, em qualquer runtime, a skill `prime` lê esses arquivos **só em modo leitura**: valida caminhos (recusa absoluto, `..`, URL, symlink e fora do projeto), não roda testes nem código (resultados do handoff são históricos), trata o handoff como dado não confiável e nunca retoma deploy, publicação, compra ou envio só porque o handoff lista como próximo passo. Por que `latest.md` continua sendo cópia e não ponteiro: `context/decisions/2026-09-27-handoff-history.md`. Os prompts de handoff e readback estão em `prompts/03-readback-handoff.md`.
 
 ## Usar por prompt, sem scripts
 
@@ -140,6 +151,7 @@ No fim de cada sessão, atualize `handoffs/latest.md` e `tasks/current.md`. Na p
 | `prompts/02-build-agnostic-workspace.md` | Prompt B: criar ou adaptar um projeto pra ser portátil entre ferramentas (com add-ons pessoal / cliente) |
 | `prompts/03-readback-handoff.md` | prompts curtos de verificação e de handoff |
 | `prompts/04-quickstart-exemplos.md` | versões curtas em modo audit e exemplos preenchidos |
+| `prompts/05-usar-os-dois.md` | usar Claude e Codex juntos: quem faz o quê, planejar e criticar (máx. 2 rodadas), construir em branch e revisar o diff, meta com condição de parada, handoff/prime entre runtimes. Adaptado do kit MIT "Use Both" (Prompt Advisers / Mark Kashef): [guia](https://inematds.github.io/use-both-claude-codex/guia/) · [repo](https://github.com/inematds/use-both-claude-codex) |
 
 Preencha os campos entre colchetes, mantenha `MODE: audit` na primeira rodada, leia o plano que o agente devolve, e só então rode de novo com `MODE: implement`.
 
@@ -158,18 +170,21 @@ Preencha os campos entre colchetes, mantenha `MODE: audit` na primeira rodada, l
 | migrar-projeto.sh em audit no wifi (2026-09-16) | passou (relatório em relatorios/) |
 | promover-memoria.sh com 50 memórias (2026-09-16) | passou: 3 fatos propostos, 1 aprovado entrou no overview de teste |
 | drift-report.sh (2026-09-16) | passou: sem drift |
+| tests/test-sync-skills.sh (2026-09-27) | passou: 20/20 (instalador em modo prévia) |
+| readback-test.sh codex (2026-09-27, v1.1.0) | passou: citou tasks/current.md, AGENTS.md, a decisão de 2026-09-27 e handoffs/latest.md; conferiu latest = snapshot em handoffs/history/ |
 
 ## O que tem aqui
 
 | Pasta | Conteúdo |
 |---|---|
 | `PLANO.md` | análise dos docs + auditoria desta máquina + passos e critérios de aceite |
-| `prompts/` | Prompt A, Prompt B, readback/handoff, quick-starts, em texto copiável |
+| `prompts/` | Prompt A, Prompt B, readback/handoff, quick-starts, usar os dois juntos, em texto copiável |
 | `scripts/doctor.sh` | diagnóstico do ambiente: ok / aviso / falta, com o que instalar |
 | `scripts/audit.sh` | inventário somente leitura Claude x Codex → matriz reutilizável / adaptador / nativo |
 | `scripts/adapt-instructions.sh` | CLAUDE.md → AGENTS.md (portátil) + CLAUDE.md (`@AGENTS.md` + resíduo) |
 | `scripts/init-core.sh` | copia `template/` pra um projeto sem sobrescrever nada existente |
-| `scripts/sync-skills.sh` | import / build / install / drift de skills via polyskill (uma fonte canônica) |
+| `scripts/sync-skills.sh` | import / build / install (prévia por padrão, `--apply` para gravar) / drift de skills via polyskill (uma fonte canônica) |
+| `tests/test-sync-skills.sh` | teste automatizado do instalador em HOME temporário |
 | `scripts/readback-test.sh` | teste de continuidade: sessão nova em cada runtime responde as 5 perguntas |
 | `scripts/migrar-projeto.sh` | encadeia adapt → init-core → check → readback num projeto e grava `relatorios/migracao-<projeto>.md` (audit por padrão, `--aplicar` para valer) |
 | `scripts/faxina.sh` | classifica cada seção de um CLAUDE.md longo: fica no AGENTS.md, vira `context/`, ou é resíduo |
@@ -181,11 +196,12 @@ Preencha os campos entre colchetes, mantenha `MODE: audit` na primeira rodada, l
 | `relatorios/` | saída das auditorias e readbacks |
 | `context/`, `tasks/`, `handoffs/` | o próprio repo usa o núcleo que propõe |
 | `FALHAS.md` | uma linha por falha corrigida |
+| `VERSION`, `CHANGELOG.md` | versão semver do kit e o que mudou em cada uma |
 | `docs/` | material de origem (local, fora do git) |
 
 ## Regras
 
 - Modo audit antes de implement. Nada em `~/.claude` ou `~/.codex` é copiado em massa ou apagado.
-- Instalar skill faz backup ao lado antes de sobrescrever.
+- Instalar skill é prévia por padrão; só grava com `--apply`, e só sobrescreve com `--replace` (com backup).
 - Segredos nunca entram no repo; keys são referenciadas, não copiadas.
 - Todo check é marcado passou, falhou ou não rodado. Sem evidência, conta como não rodado.

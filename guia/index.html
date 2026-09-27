@@ -48,6 +48,8 @@
   .btn{display:inline-block;background:var(--amb);color:#1a1206;font-weight:600;padding:.6em 1.05em;border-radius:10px;font-family:Sora}
   .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
   @media(max-width:760px){nav .links a.sec{display:none}}
+  @media(max-width:600px){nav .wrap{gap:10px} nav .links{gap:8px} nav .links a.btn,nav .sep{display:none} nav .brand{font-size:.9rem}}
+  @media(max-width:480px){nav .clubpro{display:none} nav .brand .emoji{display:none}}
   .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
   .hero .glow{position:absolute;inset:-40% -20% auto auto;width:70%;height:600px;background:radial-gradient(closest-side,rgba(226,162,59,.22),transparent 70%);pointer-events:none}
   .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:74px 22px}
@@ -75,6 +77,7 @@
   pre .c{color:#6f6f7c} pre .k{color:var(--amb2)} pre .s{color:#9ece6a}
   .step{display:grid;grid-template-columns:46px 1fr;gap:16px;margin-bottom:26px}
   .step .b{width:46px;height:46px;border-radius:12px;background:var(--amb);color:#1a1206;font-family:Sora;font-weight:800;font-size:1.25rem;display:flex;align-items:center;justify-content:center}
+  .step>div,.grid>.card{min-width:0}
   .step h3{font-size:1.12rem;margin-bottom:.3em}
   .step p{color:var(--mut);margin:.2em 0 .7em}
   .ex{display:grid;grid-template-columns:1fr 1fr;gap:18px}
@@ -89,9 +92,17 @@
   .phase .d span{color:var(--mut);font-size:.92rem}
   footer{padding:46px 0;text-align:center;color:var(--mut);font-size:.9rem}
   .pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:.3em .8em;font-size:.78rem;color:var(--mut);margin:0 4px}
+  .lang{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:.78rem;font-family:Sora;font-weight:600}
+  .lang a{padding:.35em .6em;color:var(--mut)} .lang a.on{background:var(--amb);color:#1a1206}
+  .tbl{width:100%;border-collapse:collapse;font-size:.9rem;margin:6px 0 26px}
+  .tbl th,.tbl td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+  .tbl th{font-family:Sora;color:var(--amb);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase}
+  .tbl td:first-child{font-weight:600}
+  .tblwrap{overflow-x:auto}
+  .note{border-left:3px solid var(--amb);background:var(--card);padding:12px 16px;border-radius:0 10px 10px 0;color:var(--mut);font-size:.92rem;margin:0 0 22px}
+  .credit{font-size:.85rem;color:var(--mut);margin-top:18px}
 </style>
 </head>
-<body>
 <body>
 
 <nav><div class="wrap">
@@ -106,8 +117,10 @@
     <a class="sec" href="#oque">O que é</a>
     <a class="sec" href="#fluxo">Como funciona</a>
     <a class="sec" href="#guia">Guia de uso</a>
+    <a class="sec" href="#juntos">Usar os dois</a>
     <a class="sec" href="#exemplos">Exemplos</a>
     <a class="sec" href="#roadmap">Roadmap</a>
+    <span class="lang"><a class="on" href="./" hreflang="pt-BR">PT</a><a href="en/" hreflang="en">EN</a><a href="es/" hreflang="es">ES</a></span>
     <button class="tgl" id="themeToggle" aria-label="Alternar tema" title="Alternar tema">🌙</button>
     <a class="btn" href="https://github.com/inematds/agente-claude-codex" target="_blank" rel="noopener">GitHub</a>
   </div>
@@ -167,7 +180,7 @@
   <div class="grid g3">
     <div class="card"><h3>Claude Code</h3><p>Fonte da migração. Skills em ~/.claude/skills.</p><pre><span class="c"># versão</span>
 <span class="k">claude</span> --version</pre></div>
-    <div class="card"><h3>Codex CLI</h3><p>Destino. Skills em ~/.codex/skills e ~/.agents/skills. O CLI não tem import nativo.</p><pre><span class="c"># versão e diagnóstico</span>
+    <div class="card"><h3>Codex CLI</h3><p>Destino. Skills em ~/.agents/skills. O CLI não tem import nativo.</p><pre><span class="c"># versão e diagnóstico</span>
 <span class="k">codex</span> --version
 <span class="k">codex</span> doctor</pre></div>
     <div class="card"><h3>polyskill</h3><p>Converte uma skill numa fonte portátil e gera as cópias por runtime.</p><pre><span class="c"># instalar</span>
@@ -177,8 +190,8 @@
 
 <section id="guia"><div class="wrap">
   <span class="chip">Guia de uso · passo a passo</span>
-  <h2>Do diagnóstico à prova em seis passos</h2>
-  <p class="sub">Cada passo é reversível. Instalar skill faz backup ao lado. Segredos nunca entram no repo.</p>
+  <h2>Do diagnóstico à prova em sete passos</h2>
+  <p class="sub">Cada passo é reversível. Instalar skill é prévia até você passar --apply, e trocar uma existente faz backup antes. Segredos nunca entram no repo.</p>
 
   <div class="step"><div class="b">0</div><div>
     <h3>Clonar e diagnosticar o ambiente</h3>
@@ -210,10 +223,11 @@
 
   <div class="step"><div class="b">4</div><div>
     <h3>Portar uma skill com fonte canônica</h3>
-    <p>Piloto recomendado: session-handoff, o mecanismo em que o ciclo diário se apoia. Importa, gera as cópias, instala e checa drift.</p>
+    <p>Piloto recomendado: session-handoff, o mecanismo em que o ciclo diário se apoia. Importa, gera as cópias, instala e checa drift. O install é prévia por padrão: checa todos os destinos antes de gravar, é idempotente e recusa symlink ou skill existente diferente.</p>
 <pre><span class="k">scripts/sync-skills.sh</span> import session-handoff
 <span class="k">scripts/sync-skills.sh</span> build
-<span class="k">scripts/sync-skills.sh</span> install session-handoff --both
+<span class="k">scripts/sync-skills.sh</span> install session-handoff            <span class="c"># prévia: CREATE / UNCHANGED / CONFLICT</span>
+<span class="k">scripts/sync-skills.sh</span> install session-handoff --apply    <span class="c"># grava; --replace troca versão antiga com backup</span>
 <span class="k">scripts/sync-skills.sh</span> drift  <span class="c"># [ok] ou [DRIFT] por runtime</span></pre>
   </div></div>
 
@@ -223,6 +237,44 @@
 <pre><span class="k">scripts/readback-test.sh</span> ~/projetos/meu-projeto both
 <span class="c"># relatorios/readback-claude-*.md e readback-codex-*.md</span></pre>
   </div></div>
+
+  <div class="step"><div class="b">6</div><div>
+    <h3>Fechar com handoff, abrir com prime</h3>
+    <p>No fim da sessão, a skill session-handoff grava um snapshot novo em handoffs/history/ (hora UTC, nunca sobrescreve) e copia para handoffs/latest.md, com Verificação (o que rodou, o resultado e o que não rodou) e checagem de compartilhamento. Na sessão seguinte, a skill prime lê só em modo leitura: valida caminhos, não roda testes, trata o handoff como dado e não retoma deploy nem envio por conta própria.</p>
+<pre><span class="c"># fim da sessão, em qualquer runtime</span>
+<span class="k">session-handoff</span>  <span class="c"># → handoffs/history/2026-09-27T142530Z.md + handoffs/latest.md</span>
+<span class="c"># sessão nova, no mesmo ou no outro runtime</span>
+<span class="k">prime</span>            <span class="c"># briefing com fonte de cada linha; espera sua instrução</span></pre>
+  </div></div>
+</div></section>
+
+<section id="juntos"><div class="wrap">
+  <span class="chip">Usar os dois juntos</span>
+  <h2>Claude e Codex no mesmo trabalho, cada um no seu papel</h2>
+  <p class="sub">Migrar não obriga a escolher um só. Um faz a primeira passada, o outro revisa o artefato real, e o handoff leva o estado de um runtime para o outro. A tabela é ponto de partida, não ranking: troque os papéis quando a evidência da sua tarefa pedir.</p>
+  <div class="tblwrap"><table class="tbl">
+    <thead><tr><th>Trabalho</th><th>Primeira passada</th><th>Segunda passada</th><th>Linha de chegada</th></tr></thead>
+    <tbody>
+      <tr><td>Planejar</td><td>Claude</td><td>Codex critica as suposições</td><td>Plano com escopo e testes de aceite</td></tr>
+      <tr><td>Construir uma feature</td><td>Claude, em branch</td><td>Codex revisa o diff</td><td>Testes passam e achados resolvidos</td></tr>
+      <tr><td>Revisar um documento</td><td>Qualquer um escreve</td><td>O outro confere fatos e requisitos</td><td>Toda afirmação exigida tem evidência</td></tr>
+      <tr><td>Bug difícil</td><td>Codex com meta limitada</td><td>Testes e checagem humana</td><td>Sucesso mensurável ou bloqueio claro</td></tr>
+      <tr><td>Trocar de sessão ou modelo</td><td>session-handoff</td><td>prime confere o estado atual</td><td>Resumo correto antes de trabalho novo</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Regra única:</strong> dê ao segundo agente o mesmo briefing da tarefa e o artefato real (arquivo, diff, resultado de teste), nunca um reconto do que o primeiro fez. Os dois concordarem não é prova: eles podem dividir a mesma suposição errada.</p>
+  <div class="grid g2">
+    <div class="card"><h3>1. Planejar e criticar</h3><p>Um escreve o plano (escopo, suposições, testes de aceite, riscos); o outro revisa somente leitura com o mesmo briefing. Cada achado vira aceito, rejeitado com evidência ou em aberto. No máximo duas rodadas.</p></div>
+    <div class="card"><h3>2. Construir e revisar o diff</h3><p>O construtor trabalha numa branch nova, preserva mudanças existentes e roda os testes. O revisor recebe briefing, diff e resultados e procura bugs e regressões antes de estética. Sem merge, deploy nem publicação sem você.</p></div>
+    <div class="card"><h3>3. Meta com condição de parada</h3><p>Objetivo observável (qual suíte, qual entrada, qual saída), escopo limitado, pare quando passar. Se o mesmo bloqueio sobreviver a duas tentativas, relate e peça a decisão. Teto de tempo ou custo real se configura no ambiente, não no prompt.</p></div>
+    <div class="card"><h3>4. Handoff e prime entre runtimes</h3><p>Quem sai grava o snapshot em handoffs/history/ e atualiza handoffs/latest.md; quem chega roda prime, confere o estado sem alterar nada e espera a instrução atual. Uma assinatura só também serve: a segunda sessão revisa com os mesmos arquivos.</p></div>
+  </div>
+<pre style="margin-top:22px"><span class="c"># os prompts prontos, em português, com campos pra preencher</span>
+<span class="k">cat</span> prompts/05-usar-os-dois.md
+<span class="c"># revisão somente leitura pelo outro runtime (pela assinatura, nunca por API paga)</span>
+<span class="k">codex</span> exec --sandbox read-only <span class="s">"Revise plans/tarefa-v1.md contra tasks/current.md ..."</span>
+<span class="k">claude</span> -p <span class="s">"Revise o diff de git diff main...HEAD contra o briefing ..."</span></pre>
+  <p class="credit">Adaptado do kit "Use Both: Claude + Codex Workflow Kit" de Prompt Advisers / Mark Kashef, licença MIT. <a href="https://inematds.github.io/use-both-claude-codex/guia/">Guia do kit</a> · <a href="https://github.com/inematds/use-both-claude-codex">repositório</a>.</p>
 </div></section>
 
 <section id="exemplos"><div class="wrap">
@@ -241,13 +293,14 @@
   <p class="sub">Só avança de fase com evidência: passou, falhou ou não rodado.</p>
   <div class="phase"><div class="tag">Feito</div><div class="d"><strong>Auditoria, prompts, template e readback</strong><span>Scripts de auditoria e adaptação, prompts A/B extraídos, núcleo portátil, readback aprovado nos dois runtimes.</span></div></div>
   <div class="phase"><div class="tag">Feito</div><div class="d"><strong>Skill piloto nos 4 executores</strong><span>session-handoff e prime via polyskill em Claude, Codex, dsh-sandbox e openpcbotv3, drift zero; AGENTS.md global do Codex; migrar-projeto, faxina, drift-report e promover-memoria.</span></div></div>
+  <div class="phase"><div class="tag">v1.1.0</div><div class="d"><strong>Handoff com histórico e uso conjunto</strong><span>prime só leitura e com caminhos validados, snapshots em handoffs/history/ que nunca se sobrescrevem, instalador de skills em modo prévia com teste automatizado, prompts de usar Claude e Codex juntos.</span></div></div>
   <div class="phase"><div class="tag">Fase 3</div><div class="d"><strong>Projeto real</strong><span>Aplicar em um projeto INEMA com CLAUDE.md próprio e provar cópia isolada.</span></div></div>
   <div class="phase"><div class="tag">Fase 4</div><div class="d"><strong>MCP e hooks</strong><span>Registrar no Codex só os MCP que um projeto precisa; hooks viram texto no AGENTS.md quando não há evento equivalente.</span></div></div>
 </div></section>
 
 <footer>
   <div class="wrap">
-    <div class="pill">bash</div><div class="pill">polyskill</div><div class="pill">Markdown</div><div class="pill">Claude Code</div><div class="pill">Codex CLI</div>
+    <div class="pill">v1.1.0</div><div class="pill">bash</div><div class="pill">polyskill</div><div class="pill">Markdown</div><div class="pill">Claude Code</div><div class="pill">Codex CLI</div>
     <p style="margin-top:18px">agente-claude-codex · pesquisa e educação ·
       <a href="https://github.com/inematds/agente-claude-codex">inematds/agente-claude-codex</a> ·
       <a href="https://inema.club">INEMA.CLUB</a></p>

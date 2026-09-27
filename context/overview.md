@@ -8,7 +8,7 @@ Kit de migração/agnosticismo: scripts de auditoria e adaptação + template de
 - Codex CLI 0.154.0 não tem comando `import`; o import "um clique" é do app desktop.
 - Claude Code 2.1.270 com 116 skills; Codex com 27 (`~/.codex/skills` ≈ `~/.agents/skills`).
 - polyskill 0.1.0 instalado globalmente.
-- MCP no Claude: magnific, metricool. No Codex: nenhum.
+- MCP no Claude: magnific, metricool. No Codex: magnific e metricool registrados em 2026-09-16 (login OAuth pendente; fonte: PLANO.md §8).
 - Hooks Codex: PostToolUse e Stop (impeccable). Claude: SessionStart (context-mode, fable-mindset).
 
 ## Preferências do dono
