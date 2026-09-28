@@ -2,6 +2,11 @@
 
 Semver `vX.XX.YY`: patch incrementa YY; minor incrementa XX e carrega YY; só major zera.
 
+## 1.1.1 — 2026-09-28
+
+- **session-handoff**: volta a registrar a memória do runtime tocada na sessão (seção nova "Memória e regras duráveis tocadas"; `MEMORY.md`, `CLAUDE.md`/`AGENTS.md`, `FALHAS.md`, lições), que a 1.1.0 tinha removido.
+- **Caminhos no handoff**: relativos dentro do projeto; absolutos com `~/` para o que fica fora (memória, `~/.claude`, `~/.agents`, outros repos); raiz absoluta uma vez em "Projeto e escopo".
+
 ## 1.1.0 — 2026-09-27
 
 Melhorias incorporadas do kit MIT "Use Both: Claude + Codex Workflow Kit" (Prompt Advisers / Mark Kashef),

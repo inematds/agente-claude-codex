@@ -55,6 +55,7 @@ Não invoque para "organiza/otimiza a sessão" (isso é `session-statusline`) ne
    - Lista de tarefas: em andamento e pendentes.
    - Processos em segundo plano que você iniciou (IDs de shell são essenciais para o próximo agente).
    - Arquivos criados ou alterados nesta sessão — você sabe o que tocou; não use grep para redescobrir.
+   - Memória do runtime gravada ou alterada nesta sessão (ex.: `~/.claude/projects/<projeto>/memory/`, `MEMORY.md`, `CLAUDE.md`/`AGENTS.md`, `FALHAS.md`, lições): o próximo agente precisa saber o que já virou regra durável.
    - Perguntas sem resposta clara.
 4. **Não audite o sistema de arquivos.** É síntese do que aconteceu NESTA sessão. `git status` para conferir o que está sujo é permitido; varreduras amplas, não.
 5. **Sem ruído de exploração** (grep que falhou, tentativas descartadas).
@@ -90,13 +91,13 @@ Antes de gravar, confira e declare na seção própria que o texto **não conté
 
 ## Modelo — use exatamente esta estrutura, toda vez
 
-Caminhos **relativos à raiz do projeto** (o arquivo viaja entre máquinas e provedores); no chat pode acrescentar o absoluto da raiz uma vez no título.
+Caminhos: **dentro do projeto, relativos à raiz** (o arquivo viaja entre máquinas e provedores); **fora do projeto** (memória do runtime, `~/.claude`, `~/.agents`, outros repos), **absolutos com `~/`**, para não ficarem ambíguos. A raiz absoluta do projeto aparece uma vez, em "Projeto e escopo".
 
 ```
 # Handoff — AAAA-MM-DD — <título de uma linha do que foi a sessão>
 
 ## Projeto e escopo
-<projeto, raiz, o que o usuário pediu e restrições que surgiram, 2-3 frases>
+<projeto, raiz absoluta (ex.: ~/projetos/x), o que o usuário pediu e restrições que surgiram, 2-3 frases>
 
 ## Objetivo atual
 <de tasks/current.md, com critério de pronto>
@@ -116,6 +117,10 @@ Caminhos **relativos à raiz do projeto** (o arquivo viaja entre máquinas e pro
 
 ## Arquivos alterados
 - `<caminho relativo>` — <propósito>; marque trabalho pré-existente sem assumir autoria
+- Fora do projeto: `<~/caminho absoluto>` — <propósito> (ou "nenhum")
+
+## Memória e regras duráveis tocadas
+- `<~/caminho absoluto>` — <o que foi gravado ou mudou, em uma linha> (ou "nenhuma")
 
 ## Verificação
 - Rodado: `<comando exato>` → <resultado observado: saída, exit code, N testes ok/falha>

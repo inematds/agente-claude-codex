@@ -1,8 +1,8 @@
 {
   "files": {
-    "dist/claude/session-handoff/SKILL.md": "90a1a621515324b9",
-    "dist/codex/session-handoff/SKILL.md": "91252a247b3aa5fc",
+    "dist/claude/session-handoff/SKILL.md": "c773ebe69557b5d6",
+    "dist/codex/session-handoff/SKILL.md": "69750c1e93cb5957",
     "dist/codex/session-handoff/agents/openai.yaml": "2ad8e31ee495d75f"
   },
-  "built_at": "2026-09-27T11:11:18.336Z"
+  "built_at": "2026-09-28T11:18:01.746Z"
 }
