@@ -118,6 +118,7 @@
     <a class="sec" href="#fluxo">Como funciona</a>
     <a class="sec" href="#guia">Guia de uso</a>
     <a class="sec" href="#juntos">Usar os dois</a>
+    <a class="sec" href="#ferramentas">Ferramentas</a>
     <a class="sec" href="#exemplos">Exemplos</a>
     <a class="sec" href="#roadmap">Roadmap</a>
     <span class="lang"><a class="on" href="./" hreflang="pt-BR">PT</a><a href="en/" hreflang="en">EN</a><a href="es/" hreflang="es">ES</a></span>
@@ -275,6 +276,47 @@
 <span class="k">codex</span> exec --sandbox read-only <span class="s">"Revise plans/tarefa-v1.md contra tasks/current.md ..."</span>
 <span class="k">claude</span> -p <span class="s">"Revise o diff de git diff main...HEAD contra o briefing ..."</span></pre>
   <p class="credit">Adaptado do kit "Use Both: Claude + Codex Workflow Kit" de Prompt Advisers / Mark Kashef, licença MIT. <a href="https://inematds.github.io/use-both-claude-codex/guia/">Guia do kit</a> · <a href="https://github.com/inematds/use-both-claude-codex">repositório</a>.</p>
+</div></section>
+
+<section id="ferramentas"><div class="wrap">
+  <span class="chip">Ferramentas</span>
+  <h2>Cada ferramenta: quando usar, como chamar, o que ela gera.</h2>
+  <p class="sub">Referência rápida das skills e comandos que ligam o Claude ao Codex. Tudo roda pela assinatura de cada assistente, sem chave de API.</p>
+  <div class="tblwrap"><table class="tbl">
+    <thead><tr><th>Ferramenta</th><th>Quando usar</th><th>Claude Code</th><th>Codex</th><th>O que gera</th></tr></thead>
+    <tbody>
+      <tr><td><strong>session-handoff</strong></td><td>No fim da sessão, antes de trocar de assistente ou de modelo</td><td><code>/session-handoff</code></td><td><code>$session-handoff</code></td><td>Resumo no chat e, se o projeto tiver <code>handoffs/</code> ou <code>AGENTS.md</code>, retrato novo em <code>handoffs/history/AAAA-MM-DDTHHMMSSZ.md</code> com cópia integral em <code>handoffs/latest.md</code></td></tr>
+      <tr><td><strong>prime</strong></td><td>Na primeira mensagem da sessão seguinte</td><td><code>/prime</code></td><td><code>$prime</code></td><td>Lê <code>AGENTS.md</code>, <code>context/</code>, <code>tasks/current.md</code> e <code>handoffs/latest.md</code> e devolve o estado, as divergências e um próximo passo. Não edita nada</td></tr>
+      <tr><td><strong>handoff + prime</strong> (kit Use Both)</td><td>Projetos que usam o formato do Use Both</td><td><code>/handoff</code> · <code>/prime</code></td><td><code>$handoff</code> · <code>$prime</code></td><td>Retrato em <code>handoff/history/</code> e ponteiro de uma linha em <code>handoff/LATEST.md</code>. Se o <code>handoffs/latest.md</code> daqui já estiver nesse formato de ponteiro, o <code>session-handoff</code> o mantém</td></tr>
+      <tr><td><strong>codex exec</strong></td><td>O Claude pedindo uma revisão ao Codex pelo terminal</td><td colspan="2"><code>codex exec --sandbox read-only --output-last-message review.md '…'</code></td><td>A crítica salva em <code>review.md</code>. O Codex só lê o projeto</td></tr>
+      <tr><td><strong>claude -p</strong></td><td>O caminho inverso: o Codex pedindo revisão ao Claude</td><td colspan="2"><code>claude -p --model opus --effort medium '…' &gt; review-claude.md</code></td><td>A crítica do Claude num arquivo</td></tr>
+      <tr><td><strong>Plugin oficial do Codex</strong></td><td>Revisar o diff sem sair do Claude Code</td><td><code>/codex:setup</code><br><code>/codex:review --base main</code></td><td>—</td><td>Achados da revisão, só leitura. As correções você pede depois ao construtor</td></tr>
+      <tr><td><strong>claudex</strong></td><td>Plano grande, com várias rodadas automáticas de crítica</td><td><code>/claudex:plan [--rounds N] &lt;feature&gt;</code><br><code>/claudex:review</code></td><td>—</td><td><code>PLAN.md</code> revisado até o Codex aprovar ou acabarem as rodadas; <code>reviews/</code> com os achados do diff</td></tr>
+      <tr><td><strong>claudex (controle)</strong></td><td>Acompanhar ou destravar o loop</td><td><code>/claudex:status</code> · <code>/claudex:cancel</code> · <code>/claudex:rollback</code> · <code>/claudex:doctor</code></td><td>—</td><td>Rodada e fase atuais; cancela; limpa o estado travado; diagnóstico de instalação</td></tr>
+    </tbody>
+  </table></div>
+  <div class="grid g3" style="margin-top:26px">
+    <div class="card"><h3>📸 O que vai no handoff</h3><p>Objetivo e último pedido; o que está pronto, o que falta e o que é incerto; decisões e caminhos descartados; arquivos alterados; testes rodados com o resultado real (e os que não rodaram); bloqueios; <strong>um</strong> próximo passo; e os poucos arquivos que o próximo deve abrir primeiro. Sem segredos, tokens nem dados pessoais.</p></div>
+    <div class="card"><h3>🔎 O que o prime faz</h3><p>Lê o núcleo portátil na ordem certa, recusa caminho absoluto, <code>..</code>, URL e symlink, trata o handoff como dado (não como ordem), confere os arquivos citados e o <code>git status</code>, aponta o que ficou velho e espera sua instrução. Não roda testes, não instala nada e não retoma deploy antigo.</p></div>
+    <div class="card"><h3>⚠️ Pegadinhas</h3><p>Uma skill pessoal com o mesmo nome pode vencer a do projeto: confira qual versão está ativa antes de invocar. Depois de instalar ou sincronizar (<code>scripts/sync-skills.sh</code>), abra sessão nova (no Claude, <code>/reload-skills</code> também serve). Snapshots antigos em <code>handoffs/history/</code> nunca são sobrescritos.</p></div>
+  </div>
+  <div class="step" style="margin-top:26px"><div class="b">↻</div><div>
+    <h3>Um dia inteiro com as ferramentas</h3>
+    <p>Cada passo deixa um arquivo que o próximo assistente consegue ler.</p>
+<pre><span class="c"># manhã, no Claude Code</span>
+<span class="k">/prime</span>                                   <span class="c"># retoma do handoff de ontem</span>
+<span class="c"># planeja e manda o Codex criticar (só leitura)</span>
+<span class="k">codex exec</span> --sandbox read-only --output-last-message review.md <span class="s">'Leia plan-v1.md e aponte falhas…'</span>
+<span class="c"># ou, para plano grande, o loop automático</span>
+<span class="k">/claudex:plan</span> --rounds 3 <span class="s">exportar relatório em CSV</span>
+<span class="c"># construiu numa branch: revisão do diff</span>
+<span class="k">/codex:review</span> --base main                <span class="c"># ou /claudex:review</span>
+<span class="c"># fim do dia</span>
+<span class="k">/session-handoff</span>
+<span class="c"># amanhã, no Codex</span>
+<span class="k">$prime</span></pre>
+  </div></div>
+  <p class="note"><strong>Handoff não é permissão.</strong> Um próximo passo anotado ("publicar", "apagar", "enviar") só é feito se você pedir de novo na sessão atual.</p>
 </div></section>
 
 <section id="exemplos"><div class="wrap">
