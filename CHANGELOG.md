@@ -2,6 +2,10 @@
 
 Semver `vX.XX.YY`: patch incrementa YY; minor incrementa XX e carrega YY; só major zera.
 
+## 1.2.1 — 2026-10-05
+
+- **session-handoff grava também em projeto só com `CLAUDE.md`**: antes, o arquivo só era gravado se a raiz tivesse `handoffs/` ou `AGENTS.md`; num projeto com só `CLAUDE.md` (ex.: `~/projetos/wifi`) o handoff ficava no chat, sumia no `/clear` e o `prime` da sessão seguinte não achava nada. Agora `CLAUDE.md` também conta e `handoffs/history/` é criada quando falta. Guia PT/EN/ES atualizado; instalada nos 4 executores (drift zero).
+
 ## 1.1.1 — 2026-09-28
 
 - **session-handoff**: volta a registrar a memória do runtime tocada na sessão (seção nova "Memória e regras duráveis tocadas"; `MEMORY.md`, `CLAUDE.md`/`AGENTS.md`, `FALHAS.md`, lições), que a 1.1.0 tinha removido.

@@ -2,6 +2,7 @@
 
 | data | o que quebrou | menor correção | prompt \| infra |
 |---|---|---|---|
+| 2026-10-05 | handoff da sessão MODS ficou só no chat: `~/projetos/wifi` tem só `CLAUDE.md` (sem `handoffs/` nem `AGENTS.md`), o session-handoff não gravou e o `/prime` seguinte não achou nada | condição de gravar inclui `CLAUDE.md` + `mkdir -p handoffs/history` | prompt |
 | 2026-09-27 | sync-skills apontava o Codex para `~/.codex/skills` (o Codex lê `~/.agents/skills` desde 2026-09-24) e o drift marcava "não instalada" falso | `dest_of codex` → `~/.agents/skills`, sem cópia dupla | infra |
 | 2026-09-27 | guia com rolagem horizontal em 360px: coluna `1fr` do `.step` crescia com o `<pre>`; nav estourava | `.step>div,.grid>.card{min-width:0}` + nav compacto < 600px | prompt |
 | 2026-09-16 | sync-skills install com destino já existente copiava a skill para DENTRO da pasta (session-handoff/session-handoff) e o drift nunca zerava | `rm -rf "$dest"` antes do `cp -a` | prompt |

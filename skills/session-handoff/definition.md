@@ -6,8 +6,8 @@ identity:
       Use when the user wants to end a session and hand off context to a future agent. Triggers
       include "session handoff", "handoff", "wrap up", "wrap up session", "vou dar /clear",
       "encerrar sessão", "passar para outro agente", "resumo final antes de limpar", "summarize
-      before clear". Produces a structured, sanitized handoff in chat and, when the project has a
-      portable core (handoffs/), saves it as a new never-overwritten snapshot in
+      before clear". Produces a structured, sanitized handoff in chat and, when the project root has
+      handoffs/, AGENTS.md or CLAUDE.md (creating handoffs/history/ if missing), saves it as a new never-overwritten snapshot in
       handoffs/history/<UTC-stamp>.md and refreshes handoffs/latest.md, so a fresh agent in any
       runtime can continue without losing continuity.
 activation:
@@ -71,7 +71,7 @@ Antes de gravar, confira e declare na seção própria que o texto **não conté
 
 ## Onde gravar
 
-**Sempre** mostre o resumo no chat. **Além disso**, se a raiz do projeto tiver `handoffs/` (núcleo portátil) ou `AGENTS.md`, grave em arquivo:
+**Sempre** mostre o resumo no chat. **Além disso**, se a raiz do projeto tiver `handoffs/` (núcleo portátil), `AGENTS.md` ou `CLAUDE.md`, grave em arquivo — é de lá que o `prime` lê (`handoffs/latest.md`). Se `handoffs/history/` não existir, crie (`mkdir -p handoffs/history`); só o resumo no chat se perde no `/clear` e o `prime` da próxima sessão não acha nada:
 
 1. **Resolva a raiz do projeto** pelo contexto explícito do usuário ou pela raiz do repositório. Se ambíguo, pergunte. Nunca use a home como raiz.
 2. **Recuse symlink e travessia**: `handoffs/`, `handoffs/history/`, `handoffs/latest.md` e o arquivo novo não podem ser symlink nem sair da raiz depois de resolvidos. Se algum for, não grave: relate e mostre só no chat.
