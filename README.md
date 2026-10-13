@@ -155,6 +155,30 @@ Na próxima sessão, em qualquer runtime, a skill `prime` lê esses arquivos **s
 
 Preencha os campos entre colchetes, mantenha `MODE: audit` na primeira rodada, leia o plano que o agente devolve, e só então rode de novo com `MODE: implement`.
 
+## Um contexto, várias plataformas (vídeo + modelo pronto)
+
+[![Claude e Codex com o mesmo contexto: vídeo de 7min36 com desenhos](videos/poster.jpg)](https://inematds.github.io/agente-claude-codex/videos/)
+
+**Vídeo:** [Claude e Codex com o mesmo contexto](https://inematds.github.io/agente-claude-codex/videos/) (7min36, PT, legendas, 13 capítulos). Em desenhos: do que o contexto é feito, nível 1 no computador, nível 2 na nuvem (GitHub privado), as instruções do projeto e como trocar de IA sem refazer nada.
+
+| | |
+|---|---|
+| ![A camada de contexto portátil](guia/assets/il/02-camada.jpg) | ![Ida e volta: o Codex cria, o Claude edita](guia/assets/il/11b-ida-volta.jpg) |
+| ![As instruções do projeto](guia/assets/il/10a-instrucoes.jpg) | ![O que viaja e o que não viaja](guia/assets/il/13a-mala.jpg) |
+
+**Modelo pronto** (`template/`, instalado pelo `scripts/init-core.sh`): o contexto mora num GitHub **privado** e cada IA só ganha acesso, as mesmas instruções e um teste.
+
+- `template/plataformas/instrucoes-projeto.md` — o bloco único para colar no Projeto do Claude.ai, no Projeto do ChatGPT e no ambiente do Codex na nuvem (ler a main antes, commit + push depois, só editar quando pedido, sem segredos, memória vira skill/regra/fato).
+- `template/plataformas/README.md` — como ligar cada plataforma (Claude Code, Codex, Gemini CLI, Claude.ai, ChatGPT, Codex na nuvem) e o teste de ida e volta.
+- `template/CLAUDE.md` e `template/GEMINI.md` só apontam para `AGENTS.md`; `scripts/check.sh` confere 8 arquivos.
+
+```bash
+scripts/init-core.sh ~/projetos/minhaempresa-contexto
+bash ~/projetos/minhaempresa-contexto/scripts/check.sh
+```
+
+Testado em 13/10/2026: com o mesmo bloco de instruções, o Codex criou `context/voz.md` (commit + push) e o Claude leu, editou e fez commit + push no mesmo remoto. Os conectores do Claude.ai e do ChatGPT seguem o mesmo bloco, mas dependem da conta de cada um: faça o teste de ida e volta ao ligar. Ilustrações em EN/ES no guia (`guia/en/`, `guia/es/`).
+
 ## O que já foi testado nesta máquina (2026-09-13 e 2026-09-16)
 
 | Passo | Resultado |

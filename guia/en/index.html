@@ -47,7 +47,8 @@
   .tgl:hover{border-color:var(--amb)}
   .btn{display:inline-block;background:var(--amb);color:#1a1206;font-weight:600;padding:.6em 1.05em;border-radius:10px;font-family:Sora}
   .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
-  @media(max-width:760px){nav .links a.sec{display:none}}
+  @media(max-width:1240px){nav .links a.sec{display:none}}
+  nav a,nav .brand,nav .clubpro{white-space:nowrap} nav .links a.sec2{display:none}
   @media(max-width:600px){nav .wrap{gap:10px} nav .links{gap:8px} nav .links a.btn,nav .sep{display:none} nav .brand{font-size:.9rem}}
   @media(max-width:480px){nav .clubpro{display:none} nav .brand .emoji{display:none}}
   .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
@@ -99,6 +100,7 @@
   .tbl th{font-family:Sora;color:var(--amb);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase}
   .tbl td:first-child{font-weight:600}
   .tblwrap{overflow-x:auto}
+  .vid{margin:0 0 26px}.vid video{width:100%;aspect-ratio:16/9;background:#000;border-radius:14px;border:1px solid var(--line);display:block}.vid figcaption,.ilus figcaption{color:var(--mut);font-size:.9rem;margin-top:8px}.ilus figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}.ilus img{width:100%;display:block}.ilus figcaption{padding:4px 14px 14px}.h3s{margin:30px 0 14px;font-size:1.2rem}
   .note{border-left:3px solid var(--amb);background:var(--card);padding:12px 16px;border-radius:0 10px 10px 0;color:var(--mut);font-size:.92rem;margin:0 0 22px}
   .credit{font-size:.85rem;color:var(--mut);margin-top:18px}
 </style>
@@ -114,13 +116,14 @@
     <a class="pro" href="https://inema.pro" target="_blank" rel="noopener">PRO</a>
   </span>
   <div class="links">
-    <a class="sec" href="#oque">What it is</a>
-    <a class="sec" href="#fluxo">How it works</a>
+    <a class="sec sec2" href="#oque">What it is</a>
+    <a class="sec sec2" href="#fluxo">How it works</a>
     <a class="sec" href="#guia">User guide</a>
     <a class="sec" href="#juntos">Use both</a>
+    <a class="sec" href="#modelo">Many AIs</a>
     <a class="sec" href="#ferramentas">Tools</a>
-    <a class="sec" href="#exemplos">Examples</a>
-    <a class="sec" href="#roadmap">Roadmap</a>
+    <a class="sec sec2" href="#exemplos">Examples</a>
+    <a class="sec sec2" href="#roadmap">Roadmap</a>
     <span class="lang"><a href="../" hreflang="pt-BR">PT</a><a class="on" href="./" hreflang="en">EN</a><a href="../es/" hreflang="es">ES</a></span>
     <button class="tgl" id="themeToggle" aria-label="Toggle theme" title="Toggle theme">🌙</button>
     <a class="btn" href="https://github.com/inematds/agente-claude-codex" target="_blank" rel="noopener">GitHub</a>
@@ -276,6 +279,45 @@
 <span class="k">codex</span> exec --sandbox read-only <span class="s">"Review plans/task-v1.md against tasks/current.md ..."</span>
 <span class="k">claude</span> -p <span class="s">"Review the diff from git diff main...HEAD against the brief ..."</span></pre>
   <p class="credit">Adapted from the "Use Both: Claude + Codex Workflow Kit" by Prompt Advisers / Mark Kashef, MIT license. <a href="https://inematds.github.io/use-both-claude-codex/guia/">Kit guide</a> · <a href="https://github.com/inematds/use-both-claude-codex">repository</a>.</p>
+</div></section>
+
+<section id="modelo"><div class="wrap">
+  <span class="chip">One context, many platforms</span>
+  <h2>Your AI changes. Your context stays.</h2>
+  <p class="sub">Your business context lives in a private GitHub repo that you own. Claude, ChatGPT, Codex and Gemini only get access, the same instructions and a test. Switched AI? Nothing to redo. The video explains the whole idea with drawings; the ready-made template is in <code>template/</code>.</p>
+  <figure class="vid"><video controls preload="none" playsinline poster="../../videos/poster.jpg"><source src="https://github.com/inematds/agente-claude-codex/releases/download/video-v1.0.0/contexto-portatil-pt-16x9.mp4" type="video/mp4"><track default kind="subtitles" src="../../videos/pt.vtt" srclang="pt" label="Português"></video>
+  <figcaption>Claude and Codex with the same context · 7min36 · in Portuguese, with Portuguese subtitles · <a href="../../videos/">open the player with chapters</a></figcaption></figure>
+  <h3 class="h3s">The idea in 8 drawings</h3>
+  <div class="grid g2 ilus">
+    <figure><img loading="lazy" src="../assets/il/02-camada-en.jpg" alt="The portable context layer: AIs on top, a bridge in the middle, the context you control at the bottom"><figcaption><b>1. The layer.</b> On top, where the AI works. In the middle, the bridge (git, connector, API). At the bottom, the context that is yours.</figcaption></figure>
+    <figure><img loading="lazy" src="../assets/il/03a-do-que-e-feito-en.jpg" alt="Files and documents on one side, live data on the other"><figcaption><b>2. What it is made of.</b> Documents (business, voice, customers, skills, decisions) go to a document home; records that change all the time go to a database.</figcaption></figure>
+    <figure><img loading="lazy" src="../assets/il/04a-nivel1-en.jpg" alt="Claude and Codex working in the same local folder"><figcaption><b>3. Level 1: your computer.</b> Claude and Codex already work in the same folder. The limit is keeping the laptop on.</figcaption></figure>
+    <figure><img loading="lazy" src="../assets/il/06a-nivel2-en.jpg" alt="Level 2: GitHub or Notion for files, a cloud database for live data"><figcaption><b>4. Level 2: a home in the cloud.</b> GitHub (solo or technical team) or Notion (teams), plus a database such as Supabase for live data.</figcaption></figure>
+    <figure><img loading="lazy" src="../assets/il/08-repo-privado-en.jpg" alt="Creating a private GitHub repository"><figcaption><b>5. A private repository.</b> A repository is just an online folder. An easy name, and always private.</figcaption></figure>
+    <figure><img loading="lazy" src="../assets/il/10a-instrucoes-en.jpg" alt="Project instructions: the repository is the source of truth"><figcaption><b>6. The project instructions.</b> The same block on every platform: the repo is the source of truth, read first, commit after, no secrets.</figcaption></figure>
+    <figure><img loading="lazy" src="../assets/il/11b-ida-volta-en.jpg" alt="Codex creates a file, Claude reads and edits the same file"><figcaption><b>7. Round trip.</b> One AI creates, the other reads and edits. Both commits show up in the same history.</figcaption></figure>
+    <figure><img loading="lazy" src="../assets/il/13a-mala-en.jpg" alt="The portable core suitcase: what travels and what does not"><figcaption><b>8. The suitcase.</b> Context, skills, decisions and data travel. Chat history, app memory and model choice stay behind.</figcaption></figure>
+  </div>
+  <h3 class="h3s">The ready-made template: connect each platform</h3>
+  <pre><span class="c"># installs the portable core + the plataformas/ folder in your project (never overwrites)</span>
+<span class="k">scripts/init-core.sh</span> ~/projects/mycompany-context
+<span class="k">bash</span> ~/projects/mycompany-context/scripts/check.sh   <span class="c"># 8 files [ok]</span></pre>
+  <div class="tblwrap"><table class="tbl">
+    <thead><tr><th>Platform</th><th>Access</th><th>Instructions</th><th>Test</th></tr></thead>
+    <tbody>
+      <tr><td>Claude Code / Codex CLI</td><td><code>git clone</code> the repo</td><td>reads <code>AGENTS.md</code> on its own (Claude via <code>CLAUDE.md</code> → <code>@AGENTS.md</code>)</td><td>"read the context and state the goal"</td></tr>
+      <tr><td>Gemini CLI</td><td><code>git clone</code></td><td><code>GEMINI.md</code> → <code>@AGENTS.md</code></td><td>the same</td></tr>
+      <tr><td>Claude.ai (Project)</td><td>Customize → Connectors → GitHub (integration + MCP)</td><td>paste <code>plataformas/instrucoes-projeto.md</code></td><td>edit a test line</td></tr>
+      <tr><td>ChatGPT (Project)</td><td>Connectors → GitHub</td><td>paste the same block</td><td>create <code>context/teste.md</code></td></tr>
+      <tr><td>Codex cloud</td><td>environment with the repo</td><td><code>AGENTS.md</code> is already in the repo</td><td>ask for an edit and check the commit</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Tested on this machine (2026-10-13):</strong> in a project created by <code>init-core.sh</code>, Codex got the instruction block and created <code>context/voz.md</code> (commit + push); then Claude, with the same block, read the file Codex created, added a line and did commit + push. Both commits ended up in the same history. The Claude.ai and ChatGPT connectors follow the same block but depend on your account: run the round-trip test when you connect each one. (The template's files are written in Portuguese; translate them to your language if you prefer.)</p>
+  <div class="grid g3">
+    <div class="card"><h3>Private repo</h3><p>Business context is never public. Passwords and keys live in each platform's vault, never in the repo.</p></div>
+    <div class="card"><h3>Memory becomes a skill</h3><p>Whatever the AI learns becomes a rule in <code>AGENTS.md</code>, a skill in <code>.agents/skills/</code> or a fact in <code>context/</code>. App memory does not travel.</p></div>
+    <div class="card"><h3>Drive and Notion</h3><p>Google Drive can read but cannot edit markdown well today. Teams without Git: Notion as the document home.</p></div>
+  </div>
 </div></section>
 
 <section id="ferramentas"><div class="wrap">

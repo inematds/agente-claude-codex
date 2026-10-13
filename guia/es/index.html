@@ -47,7 +47,8 @@
   .tgl:hover{border-color:var(--amb)}
   .btn{display:inline-block;background:var(--amb);color:#1a1206;font-weight:600;padding:.6em 1.05em;border-radius:10px;font-family:Sora}
   .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
-  @media(max-width:760px){nav .links a.sec{display:none}}
+  @media(max-width:1240px){nav .links a.sec{display:none}}
+  nav a,nav .brand,nav .clubpro{white-space:nowrap} nav .links a.sec2{display:none}
   @media(max-width:600px){nav .wrap{gap:10px} nav .links{gap:8px} nav .links a.btn,nav .sep{display:none} nav .brand{font-size:.9rem}}
   @media(max-width:480px){nav .clubpro{display:none} nav .brand .emoji{display:none}}
   .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
@@ -99,6 +100,7 @@
   .tbl th{font-family:Sora;color:var(--amb);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase}
   .tbl td:first-child{font-weight:600}
   .tblwrap{overflow-x:auto}
+  .vid{margin:0 0 26px}.vid video{width:100%;aspect-ratio:16/9;background:#000;border-radius:14px;border:1px solid var(--line);display:block}.vid figcaption,.ilus figcaption{color:var(--mut);font-size:.9rem;margin-top:8px}.ilus figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}.ilus img{width:100%;display:block}.ilus figcaption{padding:4px 14px 14px}.h3s{margin:30px 0 14px;font-size:1.2rem}
   .note{border-left:3px solid var(--amb);background:var(--card);padding:12px 16px;border-radius:0 10px 10px 0;color:var(--mut);font-size:.92rem;margin:0 0 22px}
   .credit{font-size:.85rem;color:var(--mut);margin-top:18px}
 </style>
@@ -114,13 +116,14 @@
     <a class="pro" href="https://inema.pro" target="_blank" rel="noopener">PRO</a>
   </span>
   <div class="links">
-    <a class="sec" href="#oque">Qué es</a>
-    <a class="sec" href="#fluxo">Cómo funciona</a>
+    <a class="sec sec2" href="#oque">Qué es</a>
+    <a class="sec sec2" href="#fluxo">Cómo funciona</a>
     <a class="sec" href="#guia">Guía de uso</a>
     <a class="sec" href="#juntos">Usar los dos</a>
+    <a class="sec" href="#modelo">Varias IAs</a>
     <a class="sec" href="#ferramentas">Herramientas</a>
-    <a class="sec" href="#exemplos">Ejemplos</a>
-    <a class="sec" href="#roadmap">Hoja de ruta</a>
+    <a class="sec sec2" href="#exemplos">Ejemplos</a>
+    <a class="sec sec2" href="#roadmap">Hoja de ruta</a>
     <span class="lang"><a href="../" hreflang="pt-BR">PT</a><a href="../en/" hreflang="en">EN</a><a class="on" href="./" hreflang="es">ES</a></span>
     <button class="tgl" id="themeToggle" aria-label="Cambiar tema" title="Cambiar tema">🌙</button>
     <a class="btn" href="https://github.com/inematds/agente-claude-codex" target="_blank" rel="noopener">GitHub</a>
@@ -276,6 +279,45 @@
 <span class="k">codex</span> exec --sandbox read-only <span class="s">"Revisa plans/tarea-v1.md contra tasks/current.md ..."</span>
 <span class="k">claude</span> -p <span class="s">"Revisa el diff de git diff main...HEAD contra el brief ..."</span></pre>
   <p class="credit">Adaptado del kit "Use Both: Claude + Codex Workflow Kit" de Prompt Advisers / Mark Kashef, licencia MIT. <a href="https://inematds.github.io/use-both-claude-codex/guia/">Guía del kit</a> · <a href="https://github.com/inematds/use-both-claude-codex">repositorio</a>.</p>
+</div></section>
+
+<section id="modelo"><div class="wrap">
+  <span class="chip">Un contexto, varias plataformas</span>
+  <h2>Tu IA cambia. Tu contexto sigue.</h2>
+  <p class="sub">El contexto de tu negocio vive en un GitHub privado que es tuyo. Claude, ChatGPT, Codex y Gemini solo reciben acceso, las mismas instrucciones y una prueba. ¿Cambiaste de IA? Nada que rehacer. El video muestra la idea completa con dibujos; la plantilla lista está en <code>template/</code>.</p>
+  <figure class="vid"><video controls preload="none" playsinline poster="../../videos/poster.jpg"><source src="https://github.com/inematds/agente-claude-codex/releases/download/video-v1.0.0/contexto-portatil-pt-16x9.mp4" type="video/mp4"><track default kind="subtitles" src="../../videos/pt.vtt" srclang="pt" label="Português"></video>
+  <figcaption>Claude y Codex con el mismo contexto · 7min36 · en portugués, con subtítulos en portugués · <a href="../../videos/">abrir el reproductor con capítulos</a></figcaption></figure>
+  <h3 class="h3s">La idea en 8 dibujos</h3>
+  <div class="grid g2 ilus">
+    <figure><img loading="lazy" src="../assets/il/02-camada-es.jpg" alt="La capa de contexto portátil: IAs arriba, un puente en el medio, el contexto que tú controlas abajo"><figcaption><b>1. La capa.</b> Arriba, donde trabaja la IA. En el medio, el puente (git, conector, API). Abajo, el contexto que es tuyo.</figcaption></figure>
+    <figure><img loading="lazy" src="../assets/il/03a-do-que-e-feito-es.jpg" alt="Archivos y documentos de un lado, datos vivos del otro"><figcaption><b>2. De qué está hecho.</b> Los documentos (negocio, voz, clientes, skills, decisiones) van a un hogar de documentos; los registros que cambian todo el tiempo van a una base de datos.</figcaption></figure>
+    <figure><img loading="lazy" src="../assets/il/04a-nivel1-es.jpg" alt="Claude y Codex trabajando en la misma carpeta local"><figcaption><b>3. Nivel 1: tu computadora.</b> Claude y Codex ya trabajan en la misma carpeta. El límite es mantener la laptop encendida.</figcaption></figure>
+    <figure><img loading="lazy" src="../assets/il/06a-nivel2-es.jpg" alt="Nivel 2: GitHub o Notion para archivos, una base en la nube para datos vivos"><figcaption><b>4. Nivel 2: una casa en la nube.</b> GitHub (solo o equipo técnico) o Notion (equipos), y una base como Supabase para los datos vivos.</figcaption></figure>
+    <figure><img loading="lazy" src="../assets/il/08-repo-privado-es.jpg" alt="Crear un repositorio privado en GitHub"><figcaption><b>5. Un repositorio privado.</b> Un repositorio es solo una carpeta en línea. Un nombre fácil, y siempre privado.</figcaption></figure>
+    <figure><img loading="lazy" src="../assets/il/10a-instrucoes-es.jpg" alt="Instrucciones del proyecto: el repositorio es la fuente de la verdad"><figcaption><b>6. Las instrucciones del proyecto.</b> El mismo bloque en todas las plataformas: el repo es la fuente de la verdad, leer antes, commit después, sin secretos.</figcaption></figure>
+    <figure><img loading="lazy" src="../assets/il/11b-ida-volta-es.jpg" alt="Codex crea un archivo, Claude lee y edita el mismo archivo"><figcaption><b>7. Ida y vuelta.</b> Una IA crea, la otra lee y edita. Los dos commits aparecen en el mismo historial.</figcaption></figure>
+    <figure><img loading="lazy" src="../assets/il/13a-mala-es.jpg" alt="La maleta del núcleo portátil: lo que viaja y lo que no"><figcaption><b>8. La maleta.</b> Contexto, skills, decisiones y datos viajan. El historial del chat, la memoria de la app y la elección de modelo se quedan.</figcaption></figure>
+  </div>
+  <h3 class="h3s">La plantilla lista: conectar cada plataforma</h3>
+  <pre><span class="c"># instala el núcleo portátil + la carpeta plataformas/ en tu proyecto (no sobrescribe nada)</span>
+<span class="k">scripts/init-core.sh</span> ~/proyectos/miempresa-contexto
+<span class="k">bash</span> ~/proyectos/miempresa-contexto/scripts/check.sh   <span class="c"># 8 archivos [ok]</span></pre>
+  <div class="tblwrap"><table class="tbl">
+    <thead><tr><th>Plataforma</th><th>Acceso</th><th>Instrucciones</th><th>Prueba</th></tr></thead>
+    <tbody>
+      <tr><td>Claude Code / Codex CLI</td><td><code>git clone</code> del repo</td><td>lee <code>AGENTS.md</code> solo (Claude vía <code>CLAUDE.md</code> → <code>@AGENTS.md</code>)</td><td>"lee el contexto y di el objetivo"</td></tr>
+      <tr><td>Gemini CLI</td><td><code>git clone</code></td><td><code>GEMINI.md</code> → <code>@AGENTS.md</code></td><td>lo mismo</td></tr>
+      <tr><td>Claude.ai (Proyecto)</td><td>Personalizar → Conectores → GitHub (integración + MCP)</td><td>pegar <code>plataformas/instrucoes-projeto.md</code></td><td>editar una línea de prueba</td></tr>
+      <tr><td>ChatGPT (Proyecto)</td><td>Conectores → GitHub</td><td>pegar el mismo bloque</td><td>crear <code>context/teste.md</code></td></tr>
+      <tr><td>Codex en la nube</td><td>entorno con el repo</td><td><code>AGENTS.md</code> ya está en el repo</td><td>pedir una edición y ver el commit</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note"><strong>Probado en esta máquina (13/10/2026):</strong> en un proyecto creado por <code>init-core.sh</code>, Codex recibió el bloque de instrucciones y creó <code>context/voz.md</code> (commit + push); luego Claude, con el mismo bloque, leyó el archivo creado por Codex, agregó una línea e hizo commit + push. Los dos commits quedaron en el mismo historial. Los conectores de Claude.ai y ChatGPT siguen el mismo bloque, pero dependen de tu cuenta: haz la prueba de ida y vuelta al conectar cada uno. (Los archivos de la plantilla están en portugués; tradúcelos si lo prefieres.)</p>
+  <div class="grid g3">
+    <div class="card"><h3>Repo privado</h3><p>El contexto del negocio nunca es público. Contraseñas y claves van en la bóveda de cada plataforma, nunca en el repo.</p></div>
+    <div class="card"><h3>La memoria se vuelve skill</h3><p>Lo que la IA aprenda se vuelve regla en <code>AGENTS.md</code>, skill en <code>.agents/skills/</code> o hecho en <code>context/</code>. La memoria de la app no viaja.</p></div>
+    <div class="card"><h3>Drive y Notion</h3><p>Hoy Google Drive lee pero no edita bien markdown. Equipos sin Git: Notion como hogar de documentos.</p></div>
+  </div>
 </div></section>
 
 <section id="ferramentas"><div class="wrap">

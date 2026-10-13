@@ -2,6 +2,13 @@
 
 Semver `vX.XX.YY`: patch incrementa YY; minor incrementa XX e carrega YY; só major zera.
 
+## 1.3.1 — 2026-10-13
+
+- **Modelo multiplataforma** no `template/` (instalado pelo `init-core.sh`): `plataformas/instrucoes-projeto.md` (bloco único para colar no Projeto do Claude.ai, no Projeto do ChatGPT e no ambiente do Codex na nuvem: ler a main antes, commit + push depois, só editar quando pedido, sem segredos, memória vira regra/skill/fato), `plataformas/README.md` (como ligar cada plataforma + teste de ida e volta), `GEMINI.md` → `@AGENTS.md`; `AGENTS.md` ganhou a seção "Mesmo contexto em várias plataformas" e o `check.sh` confere 8 arquivos.
+- **Testado** (`relatorios/multiplataforma-2026-10-13.md`): com o mesmo bloco, o Codex criou `context/voz.md` (commit + push) e o Claude leu, editou e fez commit + push no mesmo remoto.
+- **Vídeo** "Claude e Codex com o mesmo contexto" (7min36, 13 capítulos, desenhos): release `video-v1.0.0`, player em `videos/` (`scripts/publica-video.py`).
+- **Guia PT/EN/ES**: seção `#modelo` com o vídeo, 8 ilustrações (versões EN/ES com o texto desenhado traduzido) e a tabela por plataforma. README com a mesma seção.
+
 ## 1.2.1 — 2026-10-05
 
 - **session-handoff grava também em projeto só com `CLAUDE.md`**: antes, o arquivo só era gravado se a raiz tivesse `handoffs/` ou `AGENTS.md`; num projeto com só `CLAUDE.md` (ex.: `~/projetos/wifi`) o handoff ficava no chat, sumia no `/clear` e o `prime` da sessão seguinte não achava nada. Agora `CLAUDE.md` também conta e `handoffs/history/` é criada quando falta. Guia PT/EN/ES atualizado; instalada nos 4 executores (drift zero).

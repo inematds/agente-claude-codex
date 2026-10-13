@@ -1,0 +1,989 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:01.760
+Se todo o contexto do seu negócio
+
+2
+00:00:01.760 --> 00:00:03.060
+mora dentro do Claude,
+
+3
+00:00:03.060 --> 00:00:05.080
+o Codex não enxerga nada.
+
+4
+00:00:05.080 --> 00:00:07.900
+Hoje o Claude e o ChatGPT rodam
+
+5
+00:00:07.900 --> 00:00:10.180
+o seu trabalho de IA na nuvem
+
+6
+00:00:10.180 --> 00:00:10.660
+deles.
+
+7
+00:00:10.660 --> 00:00:12.400
+Isso é ótimo para ter uma máquina
+
+8
+00:00:12.400 --> 00:00:15.400
+sempre ligada, mas cada app recebe uma
+
+9
+00:00:15.400 --> 00:00:17.300
+cópia separada do seu contexto.
+
+10
+00:00:17.300 --> 00:00:19.160
+Você acaba com duas cópias do seu
+
+11
+00:00:19.160 --> 00:00:21.680
+negócio, cada uma indo para um lado.
+
+12
+00:00:21.680 --> 00:00:23.960
+E quem guarda essas cópias prende você.
+
+13
+00:00:23.960 --> 00:00:26.680
+Neste vídeo eu mostro como montar uma
+
+14
+00:00:26.680 --> 00:00:28.240
+camada de contexto portátil:
+
+15
+00:00:28.240 --> 00:00:29.340
+um lugar só,
+
+16
+00:00:29.340 --> 00:00:30.160
+que é seu,
+
+17
+00:00:30.160 --> 00:00:32.240
+onde o Claude e o Codex trabalham
+
+18
+00:00:32.240 --> 00:00:33.100
+ao mesmo tempo.
+
+19
+00:00:33.100 --> 00:00:34.900
+E no fim você vai ver como
+
+20
+00:00:34.900 --> 00:00:36.900
+trocar de modelo sem refazer nada.
+
+21
+00:00:36.900 --> 00:00:38.960
+A solução é mais simples do que
+
+22
+00:00:38.960 --> 00:00:39.540
+parece.
+
+23
+00:00:39.540 --> 00:00:41.200
+Pense em três andares.
+
+24
+00:00:41.200 --> 00:00:43.430
+Lá em cima ficam os fabricantes:
+
+25
+00:00:43.430 --> 00:00:45.080
+Claude, ChatGPT,
+
+26
+00:00:45.080 --> 00:00:49.040
+Codex, ou qualquer outra IA que aparecer.
+
+27
+00:00:49.080 --> 00:00:50.940
+Embaixo fica o seu contexto,
+
+28
+00:00:50.940 --> 00:00:52.680
+num lugar que você controla.
+
+29
+00:00:52.680 --> 00:00:54.660
+E no meio existe uma ponte entre
+
+30
+00:00:54.660 --> 00:00:56.360
+os dois, que pode ser o Git,
+
+31
+00:00:56.360 --> 00:00:59.680
+um conector MCP ou uma API.
+
+32
+00:00:59.680 --> 00:01:01.700
+O ponto mais importante é este:
+
+33
+00:01:01.700 --> 00:01:04.200
+guardar o contexto e os dados em
+
+34
+00:01:04.200 --> 00:01:06.640
+sistemas que qualquer um desses agentes consegue
+
+35
+00:01:06.640 --> 00:01:07.300
+acessar.
+
+36
+00:01:07.300 --> 00:01:10.220
+Assim a IA pode mudar e a
+
+37
+00:01:10.220 --> 00:01:11.920
+fonte continua a mesma.
+
+38
+00:01:11.920 --> 00:01:13.640
+Antes de mudar qualquer coisa,
+
+39
+00:01:13.640 --> 00:01:15.420
+vale entender do que o contexto é
+
+40
+00:01:15.420 --> 00:01:15.820
+feito.
+
+41
+00:01:15.820 --> 00:01:17.980
+A primeira parte são arquivos
+
+42
+00:01:17.980 --> 00:01:19.920
+e documentos: o que o seu negócio
+
+43
+00:01:19.920 --> 00:01:21.780
+faz, como é o seu tom de
+
+44
+00:01:21.780 --> 00:01:24.080
+voz, quem é o seu cliente ideal,
+
+45
+00:01:24.080 --> 00:01:26.720
+suas skills e suas decisões.
+
+46
+00:01:26.720 --> 00:01:28.680
+São arquivos markdown simples.
+
+47
+00:01:28.680 --> 00:01:30.580
+A segunda parte são os dados vivos:
+
+48
+00:01:30.580 --> 00:01:31.480
+tarefas,
+
+49
+00:01:31.480 --> 00:01:33.420
+registros, atividades,
+
+50
+00:01:33.420 --> 00:01:35.400
+coisas que mudam o tempo todo e
+
+51
+00:01:35.400 --> 00:01:36.880
+moram num banco de dados.
+
+52
+00:01:36.880 --> 00:01:38.440
+E aqui tem uma pegadinha:
+
+53
+00:01:38.440 --> 00:01:40.580
+você não pode simplesmente jogar um banco
+
+54
+00:01:40.580 --> 00:01:42.140
+SQLite no Google Drive.
+
+55
+00:01:42.140 --> 00:01:43.660
+Por isso a gente trata as duas
+
+56
+00:01:43.660 --> 00:01:45.320
+partes de forma diferente.
+
+57
+00:01:45.320 --> 00:01:47.360
+O primeiro nível é o seu próprio
+
+58
+00:01:47.360 --> 00:01:48.560
+computador.
+
+59
+00:01:48.740 --> 00:01:50.780
+Eu uso o Claude e o Codex
+
+60
+00:01:50.780 --> 00:01:53.540
+trabalhando na mesma pasta local,
+
+61
+00:01:53.540 --> 00:01:54.780
+sem nenhum problema.
+
+62
+00:01:54.780 --> 00:01:56.860
+Os dois leem os mesmos arquivos,
+
+63
+00:01:56.860 --> 00:01:59.320
+e cada edição fica visível antes de
+
+64
+00:01:59.320 --> 00:02:00.200
+virar commit.
+
+65
+00:02:00.200 --> 00:02:02.180
+O problema aparece quando eu saio de
+
+66
+00:02:02.180 --> 00:02:02.930
+casa.
+
+67
+00:02:02.930 --> 00:02:03.920
+Se eu fecho o notebook,
+
+68
+00:02:03.920 --> 00:02:05.480
+ou a bateria acaba,
+
+69
+00:02:05.480 --> 00:02:07.680
+não tenho mais uma solução sempre ligada.
+
+70
+00:02:07.680 --> 00:02:09.440
+E foi exatamente isso que a Anthropic
+
+71
+00:02:09.440 --> 00:02:12.120
+e a OpenAI resolveram nas últimas atualizações:
+
+72
+00:02:12.120 --> 00:02:14.240
+levar tudo para a nuvem delas,
+
+73
+00:02:14.240 --> 00:02:16.780
+para você não precisar de computador ligado,
+
+74
+00:02:16.780 --> 00:02:18.780
+de servidor alugado ou de túnel de
+
+75
+00:02:18.780 --> 00:02:19.560
+rede.
+
+76
+00:02:19.560 --> 00:02:20.920
+Só que tem uma armadilha.
+
+77
+00:02:20.920 --> 00:02:22.360
+O que a gente não quer é
+
+78
+00:02:22.360 --> 00:02:24.140
+todo o contexto e todos os dados
+
+79
+00:02:24.140 --> 00:02:26.720
+morando na nuvem de uma empresa só.
+
+80
+00:02:26.720 --> 00:02:28.400
+Se você usa o Codex e o
+
+81
+00:02:28.400 --> 00:02:29.060
+Claude, como eu,
+
+82
+00:02:29.060 --> 00:02:31.350
+e tudo fica preso no ecossistema do
+
+83
+00:02:31.350 --> 00:02:33.460
+Claude, o Codex não consegue acessar.
+
+84
+00:02:33.460 --> 00:02:35.260
+Então o objetivo é pegar essa camada
+
+85
+00:02:35.260 --> 00:02:37.180
+sempre ligada que eles deram e deixar
+
+86
+00:02:37.180 --> 00:02:39.080
+ela independente de fabricante.
+
+87
+00:02:39.080 --> 00:02:40.560
+A camada portátil é sua,
+
+88
+00:02:40.560 --> 00:02:42.200
+e você liga em qualquer sistema que
+
+89
+00:02:42.200 --> 00:02:42.420
+quiser.
+
+90
+00:02:42.420 --> 00:02:44.940
+E as ferramentas para isso já existem.
+
+91
+00:02:44.940 --> 00:02:47.120
+O segundo nível é dar uma casa
+
+92
+00:02:47.120 --> 00:02:49.040
+na nuvem para o seu contexto.
+
+93
+00:02:49.040 --> 00:02:50.000
+Para os arquivos,
+
+94
+00:02:50.000 --> 00:02:52.380
+a minha recomendação para quem trabalha sozinho
+
+95
+00:02:52.380 --> 00:02:53.700
+é o GitHub:
+
+96
+00:02:53.700 --> 00:02:54.940
+guarda os arquivos,
+
+97
+00:02:54.940 --> 00:02:56.820
+o histórico e as versões.
+
+98
+00:02:56.820 --> 00:02:58.900
+Para equipes e para quem não é
+
+99
+00:02:58.900 --> 00:03:01.720
+técnico, o Notion costuma ser melhor,
+
+100
+00:03:01.720 --> 00:03:04.220
+porque já tem colaboração e evita que
+
+101
+00:03:04.220 --> 00:03:06.000
+um sobrescreva o documento do outro.
+
+102
+00:03:06.000 --> 00:03:08.500
+Falar em branch e merge já dá
+
+103
+00:03:08.500 --> 00:03:09.560
+pânico em muita gente.
+
+104
+00:03:09.560 --> 00:03:11.760
+O Google Drive também é uma opção,
+
+105
+00:03:11.760 --> 00:03:13.520
+mas tem uma pegadinha que eu mostro
+
+106
+00:03:13.520 --> 00:03:14.180
+já já.
+
+107
+00:03:14.180 --> 00:03:15.660
+E para os dados vivos,
+
+108
+00:03:15.660 --> 00:03:18.060
+o caminho óbvio é passar o SQLite
+
+109
+00:03:18.060 --> 00:03:18.780
+para o Supabase,
+
+110
+00:03:18.780 --> 00:03:20.580
+que dá a mesma coisa pela nuvem,
+
+111
+00:03:20.580 --> 00:03:22.840
+via MCP ou linha de comando.
+
+112
+00:03:22.840 --> 00:03:24.540
+Vamos montar com o GitHub.
+
+113
+00:03:24.540 --> 00:03:26.060
+E se você não é técnico,
+
+114
+00:03:26.060 --> 00:03:28.120
+fique comigo, porque é muito mais fácil
+
+115
+00:03:28.120 --> 00:03:29.480
+do que parece.
+
+116
+00:03:29.480 --> 00:03:31.880
+Primeiro, crie uma conta no GitHub.com,
+
+117
+00:03:31.880 --> 00:03:34.240
+tão simples quanto criar um e-mail.
+
+118
+00:03:34.240 --> 00:03:35.680
+Depois, no Claude,
+
+119
+00:03:35.680 --> 00:03:37.060
+abra o menu lateral,
+
+120
+00:03:37.060 --> 00:03:40.000
+vá em Personalizar e depois em Conectores.
+
+121
+00:03:40.000 --> 00:03:41.280
+Procure por GitHub.
+
+122
+00:03:41.280 --> 00:03:42.920
+São dois que você precisa:
+
+123
+00:03:42.920 --> 00:03:44.900
+a integração do GitHub com o Claude
+
+124
+00:03:44.900 --> 00:03:47.700
+e o servidor MCP do GitHub.
+
+125
+00:03:47.700 --> 00:03:48.960
+Clique em conectar,
+
+126
+00:03:48.960 --> 00:03:51.640
+autorize no navegador e volte para o
+
+127
+00:03:51.640 --> 00:03:52.320
+app.
+
+128
+00:03:52.320 --> 00:03:54.760
+No fim, você vê dois sinais verdes.
+
+129
+00:03:54.760 --> 00:03:56.060
+Se der algum erro,
+
+130
+00:03:56.060 --> 00:03:58.935
+cole um print no chat e peça
+
+131
+00:03:58.935 --> 00:04:00.600
+para o Claude ajudar a resolver.
+
+132
+00:04:00.760 --> 00:04:02.680
+Agora você precisa de um repositório,
+
+133
+00:04:02.680 --> 00:04:04.080
+que é só um nome chique para
+
+134
+00:04:04.080 --> 00:04:04.960
+pasta online.
+
+135
+00:04:04.960 --> 00:04:07.900
+No GitHub, crie um repositório novo com
+
+136
+00:04:07.900 --> 00:04:08.980
+um nome fácil de lembrar,
+
+137
+00:04:08.980 --> 00:04:10.640
+por exemplo o nome da sua empresa
+
+138
+00:04:10.640 --> 00:04:12.060
+e um traço contexto.
+
+139
+00:04:12.060 --> 00:04:14.000
+Coloque uma descrição curta e,
+
+140
+00:04:14.000 --> 00:04:16.760
+muito importante, marque como privado.
+
+141
+00:04:16.760 --> 00:04:19.080
+Esse conteúdo é do seu negócio,
+
+142
+00:04:19.080 --> 00:04:21.940
+e ninguém deve conseguir abrir só porque
+
+143
+00:04:21.940 --> 00:04:23.080
+copiou o link.
+
+144
+00:04:23.080 --> 00:04:25.320
+Pronto: o seu agente já consegue acessar
+
+145
+00:04:25.320 --> 00:04:26.000
+essa pasta.
+
+146
+00:04:26.000 --> 00:04:27.520
+Com o repositório criado,
+
+147
+00:04:27.520 --> 00:04:28.900
+é hora de levar o seu contexto
+
+148
+00:04:28.900 --> 00:04:29.320
+para lá.
+
+149
+00:04:29.320 --> 00:04:30.240
+Você
+
+150
+00:04:30.240 --> 00:04:31.220
+pode fazer na mão,
+
+151
+00:04:31.220 --> 00:04:32.380
+mas
+
+152
+00:04:32.380 --> 00:04:34.040
+é mais fácil pedir no chat:
+
+153
+00:04:34.040 --> 00:04:35.680
+tem uma pasta na minha área de
+
+154
+00:04:35.680 --> 00:04:37.540
+trabalho com o meu contexto,
+
+155
+00:04:37.540 --> 00:04:39.940
+copie para o meu repositório do GitHub.
+
+156
+00:04:39.940 --> 00:04:41.900
+O Claude pede permissão para usar o
+
+157
+00:04:41.900 --> 00:04:43.420
+computador, você aceita,
+
+158
+00:04:43.420 --> 00:04:45.220
+e ele usa o conector para fazer
+
+159
+00:04:45.220 --> 00:04:46.060
+o trabalho.
+
+160
+00:04:46.060 --> 00:04:47.320
+Alguns minutos depois,
+
+161
+00:04:47.320 --> 00:04:49.800
+os arquivos aparecem na pasta context,
+
+162
+00:04:49.800 --> 00:04:51.440
+separada da pasta deliverables,
+
+163
+00:04:51.440 --> 00:04:54.320
+onde fica o que a IA produz.
+
+164
+00:04:54.320 --> 00:04:56.440
+Agora o seu contexto está na nuvem,
+
+165
+00:04:56.440 --> 00:04:58.740
+seguro, e pode ser usado de qualquer
+
+166
+00:04:58.740 --> 00:04:59.780
+lugar.
+
+167
+00:04:59.780 --> 00:05:01.980
+Falta ligar esse repositório ao projeto.
+
+168
+00:05:01.980 --> 00:05:02.900
+No
+
+169
+00:05:02.900 --> 00:05:05.260
+Claude, entre nas configurações do projeto e
+
+170
+00:05:05.260 --> 00:05:06.220
+escreva as instruções,
+
+171
+00:05:06.220 --> 00:05:08.960
+que funcionam como um CLAUDE ponto md
+
+172
+00:05:08.960 --> 00:05:10.200
+daquele projeto.
+
+173
+00:05:10.200 --> 00:05:12.360
+Diga que o repositório é a fonte
+
+174
+00:05:12.360 --> 00:05:14.080
+da verdade, e que antes de qualquer
+
+175
+00:05:14.080 --> 00:05:16.240
+tarefa o agente lê o contexto de
+
+176
+00:05:16.240 --> 00:05:17.000
+lá.
+
+177
+00:05:17.000 --> 00:05:19.310
+Peça para trabalhar sempre na mesma branch,
+
+178
+00:05:19.310 --> 00:05:21.840
+a main, porque aqui não é desenvolvimento
+
+179
+00:05:21.840 --> 00:05:24.160
+de software, é só ler e atualizar
+
+180
+00:05:24.160 --> 00:05:24.380
+contexto.
+
+181
+00:05:24.380 --> 00:05:26.360
+E acrescente duas regras:
+
+182
+00:05:26.360 --> 00:05:29.660
+não apagar nem renomear arquivos sem perguntar,
+
+183
+00:05:29.660 --> 00:05:32.240
+e nunca guardar senhas ou chaves de
+
+184
+00:05:32.240 --> 00:05:33.780
+API no repositório.
+
+185
+00:05:33.840 --> 00:05:34.760
+Depois,
+
+186
+00:05:34.760 --> 00:05:36.080
+na aba Ambiente,
+
+187
+00:05:36.080 --> 00:05:38.240
+adicione o repositório ao projeto.
+
+188
+00:05:38.240 --> 00:05:40.200
+Agora é fazer o mesmo no ChatGPT
+
+189
+00:05:40.200 --> 00:05:41.400
+e no Codex.
+
+190
+00:05:41.400 --> 00:05:43.220
+Crie um projeto novo,
+
+191
+00:05:43.220 --> 00:05:46.600
+abra as configurações avançadas e cole exatamente
+
+192
+00:05:46.600 --> 00:05:48.880
+as mesmas instruções.
+
+193
+00:05:49.060 --> 00:05:50.900
+Como o GitHub já está conectado,
+
+194
+00:05:50.900 --> 00:05:52.560
+é só pedir para ele achar o
+
+195
+00:05:52.560 --> 00:05:53.780
+contexto no repositório.
+
+196
+00:05:53.780 --> 00:05:55.060
+No meu teste,
+
+197
+00:05:55.060 --> 00:05:57.260
+eu pedi para o ChatGPT criar um
+
+198
+00:05:57.260 --> 00:05:58.900
+arquivo, depois
+
+199
+00:05:58.900 --> 00:06:01.380
+voltei no Claude e pedi para ele
+
+200
+00:06:01.380 --> 00:06:03.360
+ler e editar esse arquivo.
+
+201
+00:06:03.360 --> 00:06:05.280
+Funcionou nos dois sentidos.
+
+202
+00:06:05.280 --> 00:06:07.840
+E as tarefas agendadas também conseguem ler
+
+203
+00:06:07.840 --> 00:06:10.280
+o repositório, então a camada vale para
+
+204
+00:06:10.280 --> 00:06:10.960
+tudo.
+
+205
+00:06:10.960 --> 00:06:12.020
+Três cuidados.
+
+206
+00:06:12.020 --> 00:06:14.100
+Primeiro, o Google Drive:
+
+207
+00:06:14.100 --> 00:06:16.700
+hoje o conector consegue ler os seus
+
+208
+00:06:16.700 --> 00:06:18.980
+arquivos, mas não consegue editar markdown.
+
+209
+00:06:18.980 --> 00:06:20.020
+O
+
+210
+00:06:20.020 --> 00:06:22.280
+jeito seria recriar o arquivo,
+
+211
+00:06:22.280 --> 00:06:23.960
+e aí ele enche o começo de
+
+212
+00:06:23.960 --> 00:06:25.740
+cabeçalhos e símbolos estranhos,
+
+213
+00:06:25.740 --> 00:06:28.060
+e o seu contexto vai ficando sujo.
+
+214
+00:06:28.060 --> 00:06:30.420
+Segundo, para empresas e equipes,
+
+215
+00:06:30.420 --> 00:06:32.580
+o Notion é a solução mais elegante,
+
+216
+00:06:32.580 --> 00:06:35.320
+por causa da colaboração e da proteção
+
+217
+00:06:35.320 --> 00:06:37.200
+contra sobrescrita.
+
+218
+00:06:37.280 --> 00:06:39.820
+Terceiro, a memória embutida de cada app.
+
+219
+00:06:39.820 --> 00:06:42.120
+Você pode copiar ou baixar o arquivo
+
+220
+00:06:42.120 --> 00:06:44.420
+de memória, mas a pergunta certa é
+
+221
+00:06:44.420 --> 00:06:47.960
+outra: se a IA aprendeu algo útil,
+
+222
+00:06:47.960 --> 00:06:50.040
+isso devia estar numa skill ou numa
+
+223
+00:06:50.040 --> 00:06:51.960
+regra, e não preso na memória de
+
+224
+00:06:51.960 --> 00:06:52.420
+um app.
+
+225
+00:06:52.420 --> 00:06:53.980
+E agora a parte que eu prometi:
+
+226
+00:06:53.980 --> 00:06:56.720
+como trocar de modelo sem refazer nada.
+
+227
+00:06:56.720 --> 00:06:58.040
+Pense numa mala.
+
+228
+00:06:58.040 --> 00:07:00.550
+Dentro dela vai o seu núcleo portátil:
+
+229
+00:07:00.550 --> 00:07:03.700
+contexto, skills, decisões e dados.
+
+230
+00:07:03.700 --> 00:07:05.100
+Isso viaja com você.
+
+231
+00:07:05.100 --> 00:07:06.440
+O histórico de chat,
+
+232
+00:07:06.440 --> 00:07:08.440
+a memória embutida e a escolha do
+
+233
+00:07:08.440 --> 00:07:09.600
+modelo não viajam.
+
+234
+00:07:09.600 --> 00:07:12.060
+E em cada app novo você só
+
+235
+00:07:12.060 --> 00:07:14.060
+configura o acesso e as permissões,
+
+236
+00:07:14.060 --> 00:07:17.020
+as ferramentas, as tarefas agendadas e as
+
+237
+00:07:17.020 --> 00:07:17.620
+instruções.
+
+238
+00:07:17.620 --> 00:07:19.260
+Quando sair um modelo melhor,
+
+239
+00:07:19.260 --> 00:07:22.640
+você conecta, cola as instruções e faz
+
+240
+00:07:22.640 --> 00:07:23.680
+um teste.
+
+241
+00:07:23.680 --> 00:07:24.680
+São três níveis:
+
+242
+00:07:24.680 --> 00:07:25.820
+o seu computador,
+
+243
+00:07:25.820 --> 00:07:27.480
+uma casa na nuvem e,
+
+244
+00:07:27.480 --> 00:07:29.080
+depois, a equipe.
+
+245
+00:07:29.080 --> 00:07:32.200
+Mantenha o sistema e troque a IA.
+
+246
+00:07:32.200 --> 00:07:35.153
+Mais conteúdo aberto e gratuito em inema
+
+247
+00:07:35.153 --> 00:07:36.107
+ponto club.
