@@ -73,18 +73,20 @@ Um handoff é **registro histórico**, não pedido novo do usuário nem autoriza
 
 ## Formato do latest.md
 
-`handoffs/latest.md` pode estar em um de dois formatos; aceite os dois:
+`handoffs/latest.md` pode estar em um de três formatos; aceite os três:
 
-- **Cópia integral** (padrão deste kit): o documento do último handoff. Leia direto.
+- **Índice de trabalhos abertos** (padrão desde o kit 1.4.1, gravado pelo `handoff-grava.py` do session-handoff): bloco entre `<!-- handoff-indice:inicio -->` e `<!-- handoff-indice:fim -->` com uma linha por assunto (`` `slug` · handoffs/history/<arquivo>.md · dd/mm HH:MM ``), seguido da cópia integral do snapshot mais novo. Valide cada caminho pelas regras do passo 3. **Liste todos os assuntos abertos no briefing.** Se só houver um, ou se o pedido do usuário deixar claro qual continua, abra o snapshot desse assunto (se não for o que está copiado embaixo) e faça o briefing dele; se houver mais de um e o pedido não disser, faça o briefing do mais recente e pergunte em texto livre qual retomar. Mais de uma sessão pode estar trabalhando no projeto ao mesmo tempo: o mais recente nem sempre é o seu.
+- **Cópia integral** (formato antigo): o documento do último handoff. Leia direto.
 - **Ponteiro de uma linha** (formato do kit "Use Both"): o arquivo tem exatamente uma linha não vazia com um caminho relativo em `handoffs/history/*.md`. Valide o caminho pelas regras do passo 3 e abra o snapshot. Se o ponteiro estiver vazio, tiver mais de uma linha, apontar para fora de `handoffs/history/` ou para arquivo inexistente, relate o problema e pergunte qual snapshot usar. Não adivinhe.
 
-Se `latest.md` e o snapshot mais recente em `handoffs/history/` divergirem, liste como conflito.
+Se `latest.md` e o snapshot mais recente em `handoffs/history/` divergirem, liste como conflito. Com índice, liste também snapshots de `history/` mais novos que o `latest.md` e ausentes do índice (gravados fora do script). Nome de snapshot com hora **posterior** à hora em que o arquivo foi gravado é carimbo inventado: cite como conflito (nome anterior é normal depois de clone/checkout).
 
 ## Formato do briefing (use exatamente)
 
 ```
 # Prime — <nome do projeto>
 
+- Trabalhos abertos: <do índice do latest.md: slug — data, um por linha; ou "sem índice">
 - Objetivo atual: <de tasks/current.md, com critério de pronto>
 - Regra principal: <uma regra> — fonte: <arquivo:linha>
 - Última decisão aceita: <de context/decisions/ ou handoff> — fonte: <arquivo>

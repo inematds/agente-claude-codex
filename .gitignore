@@ -2,3 +2,4 @@
 docs/
 skills/*/dist/
 *.bak-*
+__pycache__/

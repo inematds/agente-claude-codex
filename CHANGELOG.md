@@ -2,6 +2,16 @@
 
 Semver `vX.XX.YY`: patch incrementa YY; minor incrementa XX e carrega YY; só major zera.
 
+## 1.4.1 — 2026-10-15
+
+- **session-handoff grava pelo script `scripts/handoff-grava.py`** (vai junto da skill nos 4 executores). Motivo: em 15/10 duas sessões no mesmo projeto (`~/projetos/wifi`) gravaram handoff em paralelo; a segunda sobrescreveu o `latest.md` e o plano da primeira sumiu do `/prime`; e um agente pôs no nome `T120000Z` num arquivo gravado às 07:45Z.
+  - **Carimbo real**: o script usa o relógio da máquina; o nome é `<UTC>-<assunto>.md`, gravação exclusiva.
+  - **`latest.md` = índice de trabalhos abertos** (uma linha por assunto, entre `<!-- handoff-indice:inicio/fim -->`) + cópia integral do snapshot mais novo, para quem lê o arquivo como documento. Assunto (slug) estável: a sessão reusa o do índice; `--fechado` tira do índice; `--indexar` registra snapshot já existente; `--listar` mostra.
+  - **Commit do handoff**: em repositório git, um commit só com o snapshot e o `latest.md` (`git commit -- <caminhos>`; o que estiver staged por outra pessoa fica fora). Push continua manual. `--sem-commit` desliga.
+  - Testes: `tests/test_handoff_grava.py` (11, pytest).
+- **prime** aceita o formato índice, lista todos os trabalhos abertos no briefing (linha nova "Trabalhos abertos") e pergunta qual retomar quando o pedido não diz; aponta como conflito snapshot fora do índice e nome com hora posterior à gravação.
+- Hook irmão: `inematds/execucao-longa` `hook-longrun` 1.2.0 lista os abertos na sessão limpa e avisa carimbo inventado.
+
 ## 1.3.1 — 2026-10-13
 
 - **Modelo multiplataforma** no `template/` (instalado pelo `init-core.sh`): `plataformas/instrucoes-projeto.md` (bloco único para colar no Projeto do Claude.ai, no Projeto do ChatGPT e no ambiente do Codex na nuvem: ler a main antes, commit + push depois, só editar quando pedido, sem segredos, memória vira regra/skill/fato), `plataformas/README.md` (como ligar cada plataforma + teste de ida e volta), `GEMINI.md` → `@AGENTS.md`; `AGENTS.md` ganhou a seção "Mesmo contexto em várias plataformas" e o `check.sh` confere 8 arquivos.
