@@ -2,6 +2,10 @@
 
 Semver `vX.XX.YY`: patch incrementa YY; minor incrementa XX e carrega YY; só major zera.
 
+## 1.4.2 — 2026-10-15
+
+- **session-handoff: handoff pedido pelo hook não encerra a sessão.** Regra nova em "Quando invocar": grave, avise em uma linha e continue a tarefa do usuário; sessão nova só ao fim da tarefa. Motivo: em 15/10 três sessões no wifi pararam no meio do pedido (vídeos 9:16, queimadas, refaz demos) dizendo "parei porque o contexto encheu" e o Nei teve de mandar "continue". Par com hook-longrun 1.2.1 (execucao-longa).
+
 ## 1.4.1 — 2026-10-15
 
 - **session-handoff grava pelo script `scripts/handoff-grava.py`** (vai junto da skill nos 4 executores). Motivo: em 15/10 duas sessões no mesmo projeto (`~/projetos/wifi`) gravaram handoff em paralelo; a segunda sobrescreveu o `latest.md` e o plano da primeira sumiu do `/prime`; e um agente pôs no nome `T120000Z` num arquivo gravado às 07:45Z.
