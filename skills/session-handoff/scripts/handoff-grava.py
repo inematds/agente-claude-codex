@@ -48,23 +48,29 @@ def sem_symlink(raiz, p):
         erro(f"fora da raiz: {p}")
 
 
+def entradas_de(texto):
+    ent = {}
+    for ln in texto.splitlines():
+        m = LINHA.match(ln.strip())
+        if m:
+            ent[m["slug"]] = (m["arq"], m["quando"])
+    return ent
+
+
 def ler_indice(latest):
-    """(entradas {slug: (arq, quando)}, formato) do latest.md atual."""
+    """(entradas {slug: (arq, quando)}, formato) do latest.md atual. Se uma sessão com a skill antiga
+    sobrescreveu o latest.md, o índice volta do handoffs/indice.txt (cópia gravada ao lado)."""
+    copia = latest.with_name("indice.txt")
+    reserva = entradas_de(copia.read_text(encoding="utf-8")) if copia.is_file() else {}
     if not latest.exists():
-        return {}, "nenhum"
+        return reserva, "nenhum"
     txt = latest.read_text(encoding="utf-8")
     if INICIO in txt and FIM in txt:
-        bloco = txt.split(INICIO, 1)[1].split(FIM, 1)[0]
-        ent = {}
-        for ln in bloco.splitlines():
-            m = LINHA.match(ln.strip())
-            if m:
-                ent[m["slug"]] = (m["arq"], m["quando"])
-        return ent, "indice"
+        return entradas_de(txt.split(INICIO, 1)[1].split(FIM, 1)[0]), "indice"
     linhas = [ln.strip() for ln in txt.splitlines() if ln.strip()]
     if len(linhas) == 1 and linhas[0].startswith("handoffs/history/") and linhas[0].endswith(".md"):
-        return {}, "ponteiro"
-    return {}, "copia"
+        return reserva, "ponteiro"
+    return reserva, "copia"
 
 
 def preservar_legado(raiz, latest, formato):
@@ -212,12 +218,16 @@ def main():
     tmp = latest.with_suffix(".md.tmp")
     tmp.write_text(novo, encoding="utf-8")
     os.replace(tmp, latest)
+    indice = latest.with_name("indice.txt")
+    if indice.exists():
+        sem_symlink(raiz, indice)
+    indice.write_text("".join(f"- `{s}` · {a} · {q}\n" for s, (a, q) in ordenar(raiz, entradas)), encoding="utf-8")
 
     # leitura de volta
     lido, fmt = ler_indice(latest)
     if fmt != "indice" or (not a.fechado and lido.get(a.assunto, ("",))[0] != rel):
         erro("leitura de volta do latest.md não bate")
-    gravados.append(latest)
+    gravados += [latest, indice]
 
     print(f"snapshot: {rel}")
     if legado:

@@ -126,3 +126,19 @@ def test_commit_so_dos_arquivos_do_handoff(tmp_path):
 def test_fora_de_repo_nao_commita(tmp_path):
     r = rodar(tmp_path, "--assunto", "a")
     assert "não é repositório git" in r.stdout
+
+
+def test_indice_sobrevive_a_latest_sobrescrito_pela_skill_antiga(tmp_path):
+    rodar(tmp_path, "--assunto", "a", "--sem-commit")
+    rodar(tmp_path, "--assunto", "b", "--sem-commit")
+    snap = sorted((tmp_path / "handoffs/history").glob("*-b.md"))[0]
+    (tmp_path / "handoffs/latest.md").write_text(snap.read_text())  # sessão antiga copia o dela
+    rodar(tmp_path, "--assunto", "c", "--sem-commit")
+    assert set(indice(tmp_path)) == {"a", "b", "c"}
+    assert not list((tmp_path / "handoffs/history").glob("*-anterior.md"))
+
+
+def test_commit_leva_indice_txt(tmp_path):
+    raiz = repo(tmp_path)
+    rodar(raiz, "--assunto", "a")
+    assert "handoffs/indice.txt" in git(raiz, "show", "--name-only", "--format=", "HEAD").split()
