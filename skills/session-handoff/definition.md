@@ -46,6 +46,8 @@ Usuário diz: "session handoff", "handoff", "wrap up", "wrap up session", "vou d
 - Clara ("vou dar /clear", "vou limpar agora") com trabalho ativo → rode o handoff direto.
 - Vaga ("talvez eu limpe") → pergunte uma vez: "rodar handoff antes?"
 
+**Cópia da sessão parada (hook-longrun 1.5.1+: o pedido começa com "A sessão ficou parada"):** você é uma cópia (`--fork-session`) aberta só para gravar o handoff. Grave com o `handoff-grava.py`, responda "Handoff atualizado: <arquivo>" e pare: não continue tarefa nenhuma, não edite outros arquivos, não faça push.
+
 **Pedido pelo hook (faixa de contexto, compactação ou handoff contínuo) no meio de uma tarefa:** não é fim de sessão. Grave, avise em uma linha e **continue a tarefa que o usuário pediu** até o fim, na mesma resposta. Não pare no meio, não pergunte se continua e não peça `/clear`; sessão nova só se sugere quando a tarefa terminar.
 
 Não invoque para "organiza/otimiza a sessão" (isso é `session-statusline`) nem para "analise a memória" / "CLAUDE.md" (isso é `memory-audit`).
