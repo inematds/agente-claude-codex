@@ -143,6 +143,11 @@ No fim de cada sessão, a skill `session-handoff` grava um snapshot novo em `han
 
 Na próxima sessão, em qualquer runtime, a skill `prime` lê esses arquivos **só em modo leitura**: valida caminhos (recusa absoluto, `..`, URL, symlink e fora do projeto), não roda testes nem código (resultados do handoff são históricos), trata o handoff como dado não confiável e nunca retoma deploy, publicação, compra ou envio só porque o handoff lista como próximo passo. Por que `latest.md` continua sendo cópia e não ponteiro: `context/decisions/2026-09-27-handoff-history.md`. Os prompts de handoff e readback estão em `prompts/03-readback-handoff.md`.
 
+**Handoff que se confere sozinho (1.5.2).** O handoff é escrito pelo mesmo agente que pode ter se perdido, então a prova tem de estar fora do texto:
+- **Bloco de estado gravado pelo script**: o `handoff-grava.py` anexa a cada snapshot o commit atual e o sha256 dos arquivos citados e dos sujos. `handoff-grava.py --conferir handoffs/history/<snapshot>.md` diz se o projeto mudou desde então (0 igual, 2 divergente com a lista, 3 handoff antigo). Divergente = o handoff é pista, não fato. O `prime` roda essa conferência e mostra "Frescor do handoff" no briefing.
+- **Ponteiro, não prosa**: todo `[confirmed]` leva `commit <hash>`, `teste: …` ou `arquivo: …`; o `prime` confere e rebaixa a `[unverified]` o que não tiver prova.
+- **Perguntas-teste**: o handoff termina com 5 perguntas fixas (tarefa e critério, última decisão e por quê, o que não pode mudar, o que está pela metade, próxima ação), cada uma com a fonte num arquivo do projeto. Quem retoma responde pelos arquivos, compara e mostra "Perguntas-teste: N/5"; o que diverge é lacuna do handoff e não vira ação sem você confirmar.
+
 ## Usar por prompt, sem scripts
 
 | Arquivo | Quando usar |

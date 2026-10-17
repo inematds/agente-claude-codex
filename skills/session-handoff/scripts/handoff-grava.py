@@ -5,16 +5,24 @@ Uso:
   handoff-grava.py --assunto <slug> [--fechado] [--raiz DIR] [--sem-commit] < corpo.md
   handoff-grava.py --assunto <slug> --indexar handoffs/history/<arquivo>.md [--raiz DIR] [--sem-commit]
   handoff-grava.py --listar [--raiz DIR]
+  handoff-grava.py --conferir handoffs/history/<arquivo>.md [--raiz DIR]   (só leitura)
 
 O que faz:
   1. carimbo UTC real (relógio da máquina), nome handoffs/history/<AAAA-MM-DDTHHMMSSZ>-<slug>.md,
      criação exclusiva (sufixo -2, -3... se existir); nunca edita snapshot antigo;
-  2. latest.md = índice de trabalhos abertos (uma linha por assunto) + cópia integral do snapshot novo;
+  2. anexa ao snapshot um BLOCO DE ESTADO feito pelo script, não pelo agente: commit (HEAD), e sha256
+     dos arquivos citados em crase no corpo e dos arquivos sujos fora de handoffs/ no momento;
+  3. latest.md = índice de trabalhos abertos (uma linha por assunto) + cópia integral do snapshot novo;
      --fechado tira o assunto do índice; legado (cópia integral ou ponteiro) é preservado uma vez;
-  3. se a raiz for repositório git, commita SÓ o snapshot e o latest.md (pathspec); nunca faz push.
+  4. se a raiz for repositório git, commita SÓ o snapshot e o latest.md (pathspec); nunca faz push.
+
+--conferir compara o bloco de estado com o projeto agora (frescor do handoff):
+  saída 0 = igual (só handoffs/ mudou), 2 = divergente (lista o que mudou), 3 = snapshot sem bloco.
+  Divergente quer dizer: o handoff é pista, não fato — confira antes de agir.
 """
 import argparse
 import datetime as dt
+import hashlib
 import os
 import pathlib
 import re
@@ -26,6 +34,146 @@ FIM = "<!-- handoff-indice:fim -->"
 SLUG = re.compile(r"^[a-z0-9][a-z0-9-]{0,60}$")
 LINHA = re.compile(r"^- `(?P<slug>[a-z0-9-]+)` · (?P<arq>handoffs/history/[^ ]+\.md) · (?P<quando>.+)$")
 NOME = re.compile(r"^(\d{4}-\d{2}-\d{2}T\d{6}Z)")
+EST_INI = "<!-- handoff-estado:inicio -->"
+EST_FIM = "<!-- handoff-estado:fim -->"
+CITADO = re.compile(r"`([^`\s]+)`")
+EST_ARQ = re.compile(r"^- `(?P<rel>[^`]+)` · sha256:(?P<h>[0-9a-f]+|apagado) · (?P<tipo>citado|sujo)")
+MAX_CITADOS = 20
+MAX_SUJOS = 200
+
+
+GRANDE = 100 * 1024 * 1024
+
+
+def sha(p):
+    """sha256 (12 hex) lido em blocos; acima de 100 MB, tamanho + 1 MB do começo + 1 MB do fim."""
+    h = hashlib.sha256()
+    tam = p.stat().st_size
+    with open(p, "rb") as fh:
+        if tam > GRANDE:
+            h.update(str(tam).encode())
+            h.update(fh.read(1 << 20))
+            fh.seek(-(1 << 20), os.SEEK_END)
+            h.update(fh.read())
+        else:
+            for bloco in iter(lambda: fh.read(1 << 20), b""):
+                h.update(bloco)
+    return h.hexdigest()[:12]
+
+
+def rel_ok(raiz, rel):
+    """Caminho relativo seguro dentro da raiz (sem absoluto, ~, .., URL ou symlink no caminho)."""
+    if rel.startswith(("/", "~")) or "://" in rel or ".." in pathlib.PurePosixPath(rel).parts:
+        return None
+    p = raiz / rel
+    atual = p
+    while atual != raiz and atual.parent != atual:
+        if atual.is_symlink():
+            return None
+        atual = atual.parent
+    try:
+        p.resolve().relative_to(raiz.resolve())
+    except ValueError:
+        return None
+    return p
+
+
+def eh_git(raiz):
+    return git(raiz, "rev-parse", "--is-inside-work-tree").stdout.strip() == "true"
+
+
+def mudados_git(raiz, base):
+    """Arquivos (fora de handoffs/) que diferem de `base` (commit ou HEAD) agora, + não rastreados."""
+    ref = base or "HEAD"
+    nomes = set()
+    r = git(raiz, "diff", "--name-only", ref, "--", ".", ":(exclude)handoffs")
+    nomes |= {ln for ln in r.stdout.splitlines() if ln}
+    r = git(raiz, "ls-files", "--others", "--exclude-standard", "--", ".", ":(exclude)handoffs")
+    nomes |= {ln for ln in r.stdout.splitlines() if ln}
+    return sorted(nomes)
+
+
+def bloco_estado(raiz, corpo):
+    linhas, vistos = [], set()
+    commit = "sem git"
+    if eh_git(raiz):
+        h = git(raiz, "rev-parse", "HEAD")
+        commit = h.stdout.strip() if h.returncode == 0 else "sem commit"
+        br = git(raiz, "rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+        sujos = mudados_git(raiz, None if commit == "sem commit" else commit)
+        for rel in sujos[:MAX_SUJOS]:
+            p = rel_ok(raiz, rel)
+            if p is None:
+                continue
+            h12 = sha(p) if p.is_file() else "apagado"
+            linhas.append(f"- `{rel}` · sha256:{h12} · sujo")
+            vistos.add(rel)
+        cab = [f"- commit: {commit} · branch: {br}",
+               f"- arquivos sujos fora de handoffs/: {len(sujos)}" + (" (lista cortada)" if len(sujos) > MAX_SUJOS else "")]
+    else:
+        cab = [f"- commit: {commit}"]
+    n = 0
+    for rel in dict.fromkeys(CITADO.findall(corpo)):
+        if n >= MAX_CITADOS or rel in vistos:
+            continue
+        p = rel_ok(raiz, rel)
+        if p is None or not p.is_file():
+            continue
+        linhas.append(f"- `{rel}` · sha256:{sha(p)} · citado")
+        vistos.add(rel)
+        n += 1
+    return ("\n\n" + EST_INI + "\n## Estado gravado pelo script (não editar)\n\n"
+            "Gravado por handoff-grava.py no momento do handoff. `--conferir` compara com o projeto agora.\n\n"
+            + "\n".join(cab + linhas) + "\n" + EST_FIM + "\n")
+
+
+def conferir(raiz, rel):
+    snap = rel_ok(raiz, rel)
+    if snap is None or not snap.is_file():
+        erro(f"snapshot inválido: {rel}")
+    txt = snap.read_text(encoding="utf-8")
+    if EST_INI not in txt or EST_FIM not in txt:
+        print("frescor: sem bloco de estado (handoff anterior ao 1.5.2) — não dá para conferir; trate como pista")
+        sys.exit(3)
+    bloco = txt.split(EST_INI, 1)[1].split(EST_FIM, 1)[0]
+    m = re.search(r"^- commit: (\S+)", bloco, re.M)
+    commit = m[1] if m else "sem git"
+    arqs = {}
+    for ln in bloco.splitlines():
+        a = EST_ARQ.match(ln.strip())
+        if a:
+            arqs[a["rel"]] = (a["h"], a["tipo"])
+    problemas, info = [], ""
+
+    def atual(rel):
+        p = rel_ok(raiz, rel)
+        return sha(p) if p is not None and p.is_file() else "apagado"
+
+    for rel, (h, tipo) in arqs.items():
+        agora = atual(rel)
+        if agora != h:
+            problemas.append(f"{rel}: " + ("sumiu" if agora == "apagado" else "mudou") + f" ({tipo} no handoff)")
+    if commit not in ("sem git", "sem commit") and eh_git(raiz):
+        if git(raiz, "cat-file", "-e", f"{commit}^{{commit}}").returncode:
+            problemas.append(f"commit gravado {commit[:12]} não existe mais (rebase/reset?)")
+        else:
+            n = git(raiz, "rev-list", "--count", f"{commit}..HEAD", "--", ".", ":(exclude)handoffs").stdout.strip()
+            if n and n != "0":
+                info = f"{n} commit(s) depois do handoff fora de handoffs/ (só conta se o conteúdo mudou)"
+            for rel in mudados_git(raiz, commit):
+                if rel in arqs:
+                    continue  # já conferido pelo hash
+                problemas.append(f"{rel}: mudou depois do handoff (não estava no bloco)")
+    if info:
+        print(info)
+    if problemas:
+        print("frescor: divergente — o handoff é pista, não fato; confira antes de agir")
+        for p in problemas[:40]:
+            print(f"  - {p}")
+        if len(problemas) > 40:
+            print(f"  - … mais {len(problemas) - 40}")
+        sys.exit(2)
+    print(f"frescor: igual ({len(arqs)} arquivo(s) conferido(s); commit {commit[:12]})")
 
 
 def erro(msg):
@@ -156,6 +304,7 @@ def main():
     ap.add_argument("--fechado", action="store_true", help="trabalho terminado: sai do índice")
     ap.add_argument("--indexar", help="registra um snapshot já existente sem criar outro")
     ap.add_argument("--listar", action="store_true", help="mostra o índice e sai")
+    ap.add_argument("--conferir", help="compara o bloco de estado de um snapshot com o projeto agora (só leitura)")
     ap.add_argument("--raiz", default=".")
     ap.add_argument("--sem-commit", action="store_true")
     a = ap.parse_args()
@@ -165,6 +314,9 @@ def main():
         erro("a home não é raiz de projeto")
     hist = raiz / "handoffs" / "history"
     latest = raiz / "handoffs" / "latest.md"
+    if a.conferir:
+        conferir(raiz, a.conferir)
+        return
     entradas, formato = ler_indice(latest)
 
     if a.listar:
@@ -197,6 +349,10 @@ def main():
         corpo = sys.stdin.read()
         if len(corpo.strip()) < 200:
             erro("corpo do handoff vazio ou curto demais (stdin)")
+        if EST_INI in corpo:  # bloco escrito à mão ou copiado de outro handoff não vale: sai
+            antes, resto = corpo.split(EST_INI, 1)
+            corpo = antes + (resto.split(EST_FIM, 1)[1] if EST_FIM in resto else "")
+        corpo = corpo.rstrip() + "\n" + bloco_estado(raiz, corpo)
         carimbo = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
         snap = criar_exclusivo(hist, f"{carimbo}-{a.assunto}", corpo)
         gravados.append(snap)

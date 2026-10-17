@@ -1,12 +1,12 @@
 {
   "files": {
-    "dist/claude/session-handoff/SKILL.md": "7ac507bc2905b06c",
-    "dist/codex/session-handoff/SKILL.md": "314fbcf64a866e87",
+    "dist/claude/session-handoff/SKILL.md": "a65bd301ad7e553c",
+    "dist/codex/session-handoff/SKILL.md": "8f5098eb0becb1aa",
     "dist/codex/session-handoff/agents/openai.yaml": "2ad8e31ee495d75f",
-    "dist/claude/session-handoff/scripts/__pycache__/handoff-grava.cpython-312.pyc": "518ba9003b7e5161",
-    "dist/claude/session-handoff/scripts/handoff-grava.py": "a32e8bafa9990099",
-    "dist/codex/session-handoff/scripts/__pycache__/handoff-grava.cpython-312.pyc": "518ba9003b7e5161",
-    "dist/codex/session-handoff/scripts/handoff-grava.py": "a32e8bafa9990099"
+    "dist/claude/session-handoff/scripts/__pycache__/handoff-grava.cpython-312.pyc": "054a3f3c8b1b9c0e",
+    "dist/claude/session-handoff/scripts/handoff-grava.py": "87e1856286d11544",
+    "dist/codex/session-handoff/scripts/__pycache__/handoff-grava.cpython-312.pyc": "054a3f3c8b1b9c0e",
+    "dist/codex/session-handoff/scripts/handoff-grava.py": "87e1856286d11544"
   },
-  "built_at": "2026-10-15T09:13:35.962Z"
+  "built_at": "2026-10-17T16:50:08.448Z"
 }

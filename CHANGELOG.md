@@ -2,6 +2,16 @@
 
 Semver `vX.XX.YY`: patch incrementa YY; minor incrementa XX e carrega YY; só major zera.
 
+## 1.5.2 — 2026-10-17
+
+Motivo: comentários do post "Não perca o contexto" no Skool (16/10): o handoff se autocertifica (quem escreve é o agente que pode ter se perdido), handoff velho é lido como atual, e falta um número para "quanto se perdeu" ao retomar.
+
+- **session-handoff: bloco de estado gravado pelo script.** `handoff-grava.py` anexa ao snapshot (`<!-- handoff-estado:inicio/fim -->`) o commit (HEAD) e o sha256 (12 hex) dos arquivos citados em crase (até 20, só dentro da raiz, sem symlink) e dos sujos fora de `handoffs/` (até 200; arquivo > 100 MB: tamanho + começo + fim). Bloco escrito à mão no corpo é descartado. `--indexar` não altera snapshot existente.
+- **`handoff-grava.py --conferir <snapshot>`** (só leitura): 0 = igual, 2 = divergente (arquivo citado/sujo que mudou ou sumiu, arquivo alterado depois do commit gravado, commit gravado que sumiu), 3 = snapshot sem bloco. Commit novo só com o mesmo conteúdo (ex.: o próprio commit do handoff, ou o trabalho sujo commitado depois) não é divergência.
+- **session-handoff: evidência em todo `[confirmed]`** (`commit`, `teste:` ou `arquivo:`) e seção fixa **Perguntas-teste** (5 perguntas, resposta de uma linha, fonte num arquivo do projeto ou commit, nunca o próprio handoff).
+- **prime**: passos 6a–6c (frescor pelo `--conferir`, ou `git diff`/`sha256sum` à mão; evidência dos `[confirmed]`; responder as perguntas-teste pelos arquivos e comparar) e três linhas novas no briefing: Frescor, Evidência, Perguntas-teste N/5. Divergência não vira ação sem o usuário confirmar.
+- Testes: `tests/test_handoff_grava.py` 13 → 22 (pytest). Instaladas em `~/.claude/skills` e `~/.agents/skills` (`sync-skills.sh install --apply --replace`, backup feito); o Codex instalado estava sem o parágrafo da 1.5.1 e foi corrigido junto.
+
 ## 1.4.2 — 2026-10-15
 
 - **session-handoff: handoff pedido pelo hook não encerra a sessão.** Regra nova em "Quando invocar": grave, avise em uma linha e continue a tarefa do usuário; sessão nova só ao fim da tarefa. Motivo: em 15/10 três sessões no wifi pararam no meio do pedido (vídeos 9:16, queimadas, refaz demos) dizendo "parei porque o contexto encheu" e o Nei teve de mandar "continue". Par com hook-longrun 1.2.1 (execucao-longa).
