@@ -279,3 +279,63 @@ def test_imprime_comando_de_retomada_com_o_snapshot_exato(tmp_path):
 def test_fechado_nao_imprime_comando_de_retomada(tmp_path):
     r = rodar(tmp_path, "--assunto", "robot", "--sem-commit", "--fechado")
     assert "/prime" not in r.stdout
+
+
+def _outro_repo(tmp_path):
+    o = tmp_path / "outro"
+    o.mkdir()
+    repo(o)
+    (o / "curso.html").write_text("v1")
+    return o
+
+
+def test_repo_do_trabalho_entra_no_bloco_e_no_conferir(tmp_path):
+    proj = tmp_path / "proj"
+    proj.mkdir()
+    repo(proj)
+    o = _outro_repo(tmp_path)
+    r = rodar(proj, "--assunto", "robot", "--repo", str(o))
+    snap = re.search(r"snapshot: (handoffs/history/\S+)", r.stdout)[1]
+    txt = (proj / snap).read_text()
+    assert f"### Repo do trabalho: {o}" in txt and "`curso.html` · sha256:" in txt
+    assert rodar(proj, "--conferir", snap).returncode == 0
+    (o / "curso.html").write_text("v2")  # trabalho mudou no outro repo
+    c = rodar(proj, "--conferir", snap, ok=False)
+    assert c.returncode == 2 and f"{o}: curso.html" in c.stdout
+
+
+def test_repo_invalido_e_recusado(tmp_path):
+    (tmp_path / "nao-git").mkdir()
+    r = rodar(tmp_path, "--assunto", "x", "--sem-commit", "--repo", str(tmp_path / "nao-git"), ok=False)
+    assert r.returncode != 0 and "--repo" in r.stderr
+
+
+def test_avisa_repo_citado_sem_opcao(tmp_path):
+    proj = tmp_path / "proj"
+    proj.mkdir()
+    o = _outro_repo(tmp_path)
+    r = rodar(proj, "--assunto", "x", "--sem-commit", corpo=CORPO + f"Trabalho em `{o}/curso.html`\n")
+    assert "aviso:" in r.stdout and str(o) in r.stdout and "--repo" in r.stdout
+    r2 = rodar(proj, "--assunto", "y", "--sem-commit", "--repo", str(o), corpo=CORPO + f"`{o}/curso.html`\n")
+    assert "--repo" not in r2.stdout
+
+
+def test_avisa_handoff_sem_perguntas_teste(tmp_path):
+    r = rodar(tmp_path, "--assunto", "x", "--sem-commit")
+    assert "aviso: handoff sem a seção Perguntas-teste" in r.stdout
+    r2 = rodar(tmp_path, "--assunto", "y", "--sem-commit", corpo=CORPO + "\n## Perguntas-teste\n1. a → b — fonte: `x`\n")
+    assert "aviso: handoff sem" not in r2.stdout
+
+
+def test_repo_com_mais_de_200_sujos_fica_igual_e_acusa_mudanca(tmp_path):
+    proj = tmp_path / "proj"
+    proj.mkdir()
+    o = _outro_repo(tmp_path)
+    for i in range(210):
+        (o / f"f{i:03}.txt").write_text(str(i))
+    snap = re.search(r"snapshot: (\S+)", rodar(proj, "--assunto", "x", "--sem-commit", "--repo", str(o)).stdout)[1]
+    r = rodar(proj, "--conferir", snap)
+    assert "igual" in r.stdout and str(o) in r.stdout
+    (o / "f209.txt").write_text("mudou")  # fora da lista gravada (só as 200 primeiras)
+    c = rodar(proj, "--conferir", snap, ok=False)
+    assert c.returncode == 2 and "fora da lista gravada" in c.stdout

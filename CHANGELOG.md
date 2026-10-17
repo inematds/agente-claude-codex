@@ -2,6 +2,16 @@
 
 Semver `vX.XX.YY`: patch incrementa YY; minor incrementa XX e carrega YY; só major zera.
 
+## 1.7.3 — 2026-10-17
+
+Motivo: o handoff do robot-v2 foi gravado no `~/projetos/wifi`, mas o trabalho acontece no `~/projetos/robot`; o `--conferir` olhava o repo errado. E um handoff saiu sem Perguntas-teste sem ninguém perceber (pedido do Nei, 17/10).
+
+- **`handoff-grava.py --repo <caminho>`** (repetível, até 5): o bloco de estado ganha `### Repo do trabalho: <caminho>` com commit, branch, arquivos sujos e uma **impressão única de todos os sujos**. O `--conferir` confere esse repo também; com mais de 200 sujos, a impressão evita o alarme falso da lista cortada.
+- **Avisos na gravação** (`aviso: …`, sem bloquear): corpo cita outro repo git sem `--repo`; falta a seção Perguntas-teste.
+- **session-handoff**: quando usar `--repo` e o que fazer com os avisos (corrigir e gravar de novo).
+- **prime (passo 6a')**: com `Repo do trabalho` no bloco, busca o estado real lá (`git -C <caminho> status/log`, leitura dos arquivos citados), só leitura; única exceção à recusa de caminho absoluto.
+- Testes 25 → 30. Par com hook-longrun 1.8.3 (execucao-longa): `/clear` e `/prime` em linhas separadas nos avisos.
+
 ## 1.6.3 — 2026-10-17
 
 Motivo: o `/prime` sem argumento abre o handoff mais recente do projeto; se outra sessão gravou depois, a sessão nova retomava o trabalho errado (pedido do Nei, 17/10).

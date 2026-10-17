@@ -251,7 +251,9 @@
 <span class="c"># the reply ends with the ready command (in Codex, /new instead of /clear):</span>
 <span class="k">/clear</span>
 <span class="k">/prime</span> handoffs/history/2026-10-17T183328Z-robot.md   <span class="c"># opens THIS one, even if another session wrote later</span>
-<span class="c"># the subject also works (/prime robot), or nothing (/prime lists the open ones)</span></pre>
+<span class="c"># the subject also works (/prime robot), or nothing (/prime lists the open ones)</span>
+<span class="c"># session open in one project, work in another repo:</span>
+<span class="k">handoff-grava.py</span> --assunto robot --repo ~/projetos/robot   <span class="c"># --conferir covers both; prime looks there</span></pre>
   </div></div>
 </div></section>
 
@@ -384,6 +386,7 @@
   <div class="phase"><div class="tag">v1.4.1</div><div class="d"><strong>Several sessions in one project</strong><span>Writing through the handoff-grava.py script (real timestamp, never overwrites) and latest.md as an index of open work by subject.</span></div></div>
   <div class="phase"><div class="tag">v1.5.2</div><div class="d"><strong>Self-checking handoff</strong><span>State block written by the script, --conferir to know whether it went stale, a proof for every confirmed item and 5 test questions with an N/5 score in prime.</span></div></div>
   <div class="phase"><div class="tag">v1.6.3</div><div class="d"><strong>Resume the right handoff</strong><span>The handoff ends with /clear + /prime &lt;exact file&gt;, and prime accepts that file or the subject: another session writing later no longer swaps the work being resumed.</span></div></div>
+  <div class="phase"><div class="tag">v1.7.3</div><div class="d"><strong>Work in another repo</strong><span>--repo records the state of the repo where the work happens; --conferir and prime look there. Warnings when --repo or the test questions are missing.</span></div></div>
   <div class="phase"><div class="tag">Phase 3</div><div class="d"><strong>Real project</strong><span>Apply it to an INEMA project with its own CLAUDE.md and prove an isolated copy.</span></div></div>
   <div class="phase"><div class="tag">Phase 4</div><div class="d"><strong>MCP and hooks</strong><span>Register in Codex only the MCP servers a project needs; hooks become text in AGENTS.md when there is no equivalent event.</span></div></div>
 </div></section>

@@ -83,7 +83,9 @@ Antes de gravar, confira e declare na seção própria que o texto **não conté
 
 1. **Resolva a raiz do projeto** pelo contexto explícito do usuário ou pela raiz do repositório. Se ambíguo, pergunte. Nunca use a home como raiz.
 2. **Escolha o assunto (slug)**: rode `python3 <script> --raiz <raiz> --listar`. Se o trabalho desta sessão já está no índice, **reuse o mesmo slug** (ex.: `rea-es`, nunca `rea-es-2` nem `rea-es-fechamento`). Trabalho novo: slug curto, minúsculas e hífen. Várias sessões podem gravar no mesmo projeto ao mesmo tempo; cada uma cuida só do seu assunto.
-3. **Grave**: `python3 <script> --raiz <raiz> --assunto <slug> < corpo.md` (o corpo pode vir por heredoc). Se o trabalho terminou (pronto, entregue ou abandonado pelo usuário), acrescente `--fechado`: o snapshot é gravado e o assunto sai do índice. O script:
+3. **Grave**: `python3 <script> --raiz <raiz> --assunto <slug> < corpo.md` (o corpo pode vir por heredoc). Se o trabalho terminou (pronto, entregue ou abandonado pelo usuário), acrescente `--fechado`: o snapshot é gravado e o assunto sai do índice.
+   **Trabalho em outro repositório** (a sessão está aberta num projeto, ex.: `~/projetos/wifi`, mas edita outro, ex.: `~/projetos/robot`): acrescente `--repo <caminho>` (um por repo; até 5). O bloco de estado passa a guardar o commit e os arquivos alterados desse repo, e o `--conferir` confere lá também. Cite o caminho do repo no corpo, em "Projeto e escopo".
+   **Avisos do script** (`aviso: …` na saída): corpo cita outro repo sem `--repo`, ou falta a seção Perguntas-teste. Corrija e grave de novo (o snapshot anterior fica no histórico; é normal). O script:
    - cria `handoffs/history/<AAAA-MM-DDTHHMMSSZ>-<slug>.md` com gravação exclusiva (sufixo `-2`… se existir) e nunca edita snapshot antigo;
    - recusa symlink e caminho fora da raiz;
    - preserva uma vez o `latest.md` legado (cópia integral que não está em `history/`) como `<carimbo-do-mtime>-anterior.md`;

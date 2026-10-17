@@ -155,6 +155,8 @@ Na próxima sessão, em qualquer runtime, a skill `prime` lê esses arquivos **s
 ```
 O `prime` aceita esse caminho (usa exatamente esse snapshot; se houver um mais novo do mesmo assunto, avisa como conflito) ou o assunto (`/prime robot`). Sem argumento, lista os trabalhos abertos como antes.
 
+**Trabalho em outro repo (1.7.3).** Se a sessão está aberta num projeto mas edita outro (ex.: aberta no `wifi`, trabalhando no `robot`), grave com `--repo ~/projetos/robot`: o bloco de estado guarda também o commit e os arquivos alterados desse repo, o `--conferir` confere os dois, e o `prime` busca o estado real lá quando precisar. O script avisa (`aviso: …`) quando o corpo cita outro repo sem `--repo` e quando falta a seção Perguntas-teste.
+
 ## Usar por prompt, sem scripts
 
 | Arquivo | Quando usar |

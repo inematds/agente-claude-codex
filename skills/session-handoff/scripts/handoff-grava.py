@@ -2,7 +2,7 @@
 """handoff-grava.py — grava um handoff sem depender do agente para carimbo, índice ou commit.
 
 Uso:
-  handoff-grava.py --assunto <slug> [--fechado] [--raiz DIR] [--sem-commit] < corpo.md
+  handoff-grava.py --assunto <slug> [--fechado] [--raiz DIR] [--repo DIR ...] [--sem-commit] < corpo.md
   handoff-grava.py --assunto <slug> --indexar handoffs/history/<arquivo>.md [--raiz DIR] [--sem-commit]
   handoff-grava.py --listar [--raiz DIR]
   handoff-grava.py --conferir handoffs/history/<arquivo>.md [--raiz DIR]   (só leitura)
@@ -14,6 +14,8 @@ O que faz:
      dos arquivos citados em crase no corpo e dos arquivos sujos fora de handoffs/ no momento;
   3. latest.md = índice de trabalhos abertos (uma linha por assunto) + cópia integral do snapshot novo;
      --fechado tira o assunto do índice; legado (cópia integral ou ponteiro) é preservado uma vez;
+     --repo DIR (repetível) acrescenta ao bloco o commit e os sujos de outro repo onde o trabalho acontece
+     (sessão aberta num projeto editando outro); o --conferir passa a conferir esse repo também;
   4. se a raiz for repositório git, commita SÓ o snapshot e o latest.md (pathspec); nunca faz push.
 
 --conferir compara o bloco de estado com o projeto agora (frescor do handoff):
@@ -101,7 +103,54 @@ def mudados_git(raiz, base):
     return sorted(nomes)
 
 
-def bloco_estado(raiz, corpo):
+REPO_SEC = "### Repo do trabalho: "
+MAX_REPOS = 5
+
+
+def impressao(repo, nomes):
+    """Uma impressão (16 hex) de TODOS os arquivos sujos: nome + sha256 de cada, em ordem."""
+    h = hashlib.sha256()
+    for rel in nomes:
+        q = rel_ok(repo, rel)
+        h.update(f"{rel}\0{sha_seguro(q) if q is not None and q.is_file() else 'apagado'}\n".encode())
+    return h.hexdigest()[:16]
+
+
+def estado_repo(repo):
+    """Linhas do bloco para um repo onde o trabalho acontece fora da raiz do handoff (--repo)."""
+    h = git(repo, "rev-parse", "HEAD")
+    commit = h.stdout.strip() if h.returncode == 0 else "sem commit"
+    br = git(repo, "rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+    sujos = mudados_git(repo, None if commit == "sem commit" else commit)
+    linhas = ["", REPO_SEC + str(repo), f"- commit: {commit} · branch: {br}",
+              f"- arquivos sujos: {len(sujos)}" + (" (lista cortada)" if len(sujos) > MAX_SUJOS else ""),
+              f"- impressão de todos os sujos: {impressao(repo, sujos)}"]
+    for rel in sujos[:MAX_SUJOS]:
+        q = rel_ok(repo, rel)
+        if q is None:
+            continue
+        linhas.append(f"- `{rel}` · sha256:{sha_seguro(q) if q.is_file() else 'apagado'} · sujo")
+    return linhas
+
+
+def repos_citados(raiz, corpo):
+    """Raízes git de caminhos absolutos citados em crase que não são a raiz do handoff (para avisar)."""
+    achados = []
+    for c in dict.fromkeys(CITADO.findall(corpo)):
+        if not c.startswith(("/", "~/")):
+            continue
+        p = pathlib.Path(os.path.expanduser(c))
+        p = p if p.is_dir() else p.parent
+        if not p.is_dir():
+            continue
+        r = subprocess.run(["git", "-C", str(p), "rev-parse", "--show-toplevel"], capture_output=True, text=True)
+        top = r.stdout.strip()
+        if r.returncode == 0 and top and pathlib.Path(top).resolve() != raiz.resolve() and top not in achados:
+            achados.append(top)
+    return achados
+
+
+def bloco_estado(raiz, corpo, repos=()):
     linhas, vistos = [], set()
     commit = "sem git"
     if eh_git(raiz):
@@ -132,7 +181,7 @@ def bloco_estado(raiz, corpo):
         n += 1
     return ("\n\n" + EST_INI + "\n## Estado gravado pelo script (não editar)\n\n"
             "Gravado por handoff-grava.py no momento do handoff. `--conferir` compara com o projeto agora.\n\n"
-            + "\n".join(cab + linhas) + "\n" + EST_FIM + "\n")
+            + "\n".join(cab + linhas + [ln for r in repos for ln in estado_repo(r)]) + "\n" + EST_FIM + "\n")
 
 
 def conferir(raiz, rel):
@@ -144,6 +193,12 @@ def conferir(raiz, rel):
         print("frescor: sem bloco de estado (handoff anterior ao 1.5.2) — não dá para conferir; trate como pista")
         sys.exit(3)
     bloco = txt.split(EST_INI, 1)[1].split(EST_FIM, 1)[0]
+    partes = bloco.split("\n" + REPO_SEC)
+    bloco = partes[0]
+    extras = []
+    for sec in partes[1:]:
+        caminho, _, resto = sec.partition("\n")
+        extras.append((pathlib.Path(caminho.strip()), resto))
     m = re.search(r"^- commit: (\S+)", bloco, re.M)
     commit = m[1] if m else "sem git"
     arqs = {}
@@ -172,6 +227,8 @@ def conferir(raiz, rel):
                 if rel in arqs:
                     continue  # já conferido pelo hash
                 problemas.append(f"{rel}: mudou depois do handoff (não estava no bloco)")
+    for repo, resto in extras:
+        problemas += [f"{repo}: {x}" for x in conferir_repo(repo, resto)]
     if info:
         print(info)
     if problemas:
@@ -181,7 +238,43 @@ def conferir(raiz, rel):
         if len(problemas) > 40:
             print(f"  - … mais {len(problemas) - 40}")
         sys.exit(2)
-    print(f"frescor: igual ({len(arqs)} arquivo(s) conferido(s); commit {commit[:12]})")
+    rep = "".join(f"; repo do trabalho {r} igual" for r, _ in extras)
+    print(f"frescor: igual ({len(arqs)} arquivo(s) conferido(s); commit {commit[:12]}{rep})")
+
+
+def conferir_repo(repo, sec):
+    """Problemas de frescor de um repo do trabalho (seção do bloco gravada com --repo)."""
+    if not (repo / ".git").exists() and not eh_git(repo):
+        return ["repo do trabalho não existe mais ou não é git"]
+    m = re.search(r"^- commit: (\S+)", sec, re.M)
+    commit = m[1] if m else "sem commit"
+    arqs = {}
+    for ln in sec.splitlines():
+        a = EST_ARQ.match(ln.strip())
+        if a:
+            arqs[a["rel"]] = a["h"]
+    imp = re.search(r"^- impressão de todos os sujos: ([0-9a-f]+)", sec, re.M)
+    agora_sujos = mudados_git(repo, commit) if commit != "sem commit" else mudados_git(repo, None)
+    if imp and git(repo, "cat-file", "-e", f"{commit}^{{commit}}").returncode == 0 \
+            and impressao(repo, agora_sujos) == imp[1]:
+        return []  # todos os arquivos alterados estão iguais ao momento do handoff
+    out = []
+    for rel, h in arqs.items():
+        q = rel_ok(repo, rel)
+        agora = sha_seguro(q) if q is not None and q.is_file() else "apagado"
+        if agora != h:
+            out.append(f"{rel}: " + ("sumiu" if agora == "apagado" else "mudou") + " (sujo no handoff)")
+    if commit != "sem commit":
+        if git(repo, "cat-file", "-e", f"{commit}^{{commit}}").returncode:
+            out.append(f"commit gravado {commit[:12]} não existe mais (rebase/reset?)")
+        else:
+            fora = [rel for rel in agora_sujos if rel not in arqs]
+            if "(lista cortada)" in sec and fora:
+                out.append(f"{len(fora)} arquivo(s) fora da lista gravada; a impressão de todos mudou "
+                           f"(ex.: {', '.join(fora[:3])})")
+            else:
+                out += [f"{rel}: mudou depois do handoff (não estava no bloco)" for rel in fora]
+    return out
 
 
 def erro(msg):
@@ -315,6 +408,8 @@ def main():
     ap.add_argument("--conferir", help="compara o bloco de estado de um snapshot com o projeto agora (só leitura)")
     ap.add_argument("--raiz", default=".")
     ap.add_argument("--sem-commit", action="store_true")
+    ap.add_argument("--repo", action="append", default=[],
+                    help="repositório git onde o trabalho acontece, fora da raiz do handoff (pode repetir)")
     a = ap.parse_args()
 
     raiz = pathlib.Path(a.raiz).absolute()
@@ -341,7 +436,7 @@ def main():
     if latest.exists():
         sem_symlink(raiz, latest)
 
-    gravados = []
+    gravados, avisos = [], []
     legado = preservar_legado(raiz, latest, formato)
     if legado:
         gravados.append(legado)
@@ -360,7 +455,23 @@ def main():
         if EST_INI in corpo:  # bloco escrito à mão ou copiado de outro handoff não vale: sai
             antes, resto = corpo.split(EST_INI, 1)
             corpo = antes + (resto.split(EST_FIM, 1)[1] if EST_FIM in resto else "")
-        corpo = corpo.rstrip() + "\n" + bloco_estado(raiz, corpo)
+        repos = []
+        for r in a.repo[:MAX_REPOS]:
+            rp = pathlib.Path(os.path.expanduser(r)).absolute()
+            top = git(rp, "rev-parse", "--show-toplevel").stdout.strip() if rp.is_dir() else ""
+            if not top or pathlib.Path(top).resolve() == pathlib.Path.home().resolve():
+                erro(f"--repo precisa ser um repositório git: {r}")
+            if pathlib.Path(top).resolve() != raiz.resolve() and pathlib.Path(top) not in repos:
+                repos.append(pathlib.Path(top))
+        avisos = []
+        soltos = [c for c in repos_citados(raiz, corpo) if pathlib.Path(c) not in repos]
+        if soltos:
+            avisos.append("aviso: o handoff cita outro(s) repo(s) sem --repo: " + ", ".join(soltos)
+                          + ". Se o trabalho acontece lá, grave de novo com --repo <caminho> para o --conferir cobrir.")
+        if not any(s in corpo for s in ("## Perguntas-teste", "## Test questions", "## Preguntas de control")):
+            avisos.append("aviso: handoff sem a seção Perguntas-teste — o prime não vai dar a nota N/5; "
+                          "grave de novo com as 5 perguntas do modelo.")
+        corpo = corpo.rstrip() + "\n" + bloco_estado(raiz, corpo, repos)
         carimbo = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
         snap = criar_exclusivo(hist, f"{carimbo}-{a.assunto}", corpo)
         gravados.append(snap)
@@ -398,6 +509,8 @@ def main():
         print(f"legado preservado: {legado.relative_to(raiz)}")
     print(f"latest.md: {len(lido)} assunto(s) aberto(s): {', '.join(sorted(lido)) or 'nenhum'}")
     print(commitar(raiz, gravados, a.assunto, a.fechado) if not a.sem_commit else "sem commit (--sem-commit)")
+    for av in (avisos if not a.indexar else []):
+        print(av)
     if not a.fechado and not a.indexar:
         # Caminho exato deste snapshot: outra sessão pode gravar um handoff mais novo no mesmo projeto.
         print("retomar ESTE handoff numa sessão nova (Codex: /new no lugar de /clear):")

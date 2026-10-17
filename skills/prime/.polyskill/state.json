@@ -1,8 +1,8 @@
 {
   "files": {
-    "dist/claude/prime/SKILL.md": "af9ed8f470b547df",
-    "dist/codex/prime/SKILL.md": "76cdaa2730905d9e",
+    "dist/claude/prime/SKILL.md": "de761ec4d54a18f8",
+    "dist/codex/prime/SKILL.md": "4cf7fae1ff16f470",
     "dist/codex/prime/agents/openai.yaml": "b2d1ba5b1a21678f"
   },
-  "built_at": "2026-10-17T18:31:30.078Z"
+  "built_at": "2026-10-17T21:23:51.871Z"
 }

@@ -251,7 +251,9 @@
 <span class="c"># la respuesta termina con el comando listo (en Codex, /new en lugar de /clear):</span>
 <span class="k">/clear</span>
 <span class="k">/prime</span> handoffs/history/2026-10-17T183328Z-robot.md   <span class="c"># abre ESTE, aunque otra sesión haya grabado después</span>
-<span class="c"># también vale el tema (/prime robot) o nada (/prime lista los abiertos)</span></pre>
+<span class="c"># también vale el tema (/prime robot) o nada (/prime lista los abiertos)</span>
+<span class="c"># sesión abierta en un proyecto, trabajo en otro repo:</span>
+<span class="k">handoff-grava.py</span> --assunto robot --repo ~/projetos/robot   <span class="c"># --conferir cubre los dos; el prime busca allí</span></pre>
   </div></div>
 </div></section>
 
@@ -384,6 +386,7 @@
   <div class="phase"><div class="tag">v1.4.1</div><div class="d"><strong>Varias sesiones en un proyecto</strong><span>Grabación con el script handoff-grava.py (sello de hora real, nunca sobrescribe) y latest.md como índice de trabajos abiertos por tema.</span></div></div>
   <div class="phase"><div class="tag">v1.5.2</div><div class="d"><strong>Handoff que se verifica</strong><span>Bloque de estado grabado por el script, --conferir para saber si quedó viejo, prueba en cada ítem confirmado y 5 preguntas de control con nota N/5 en el prime.</span></div></div>
   <div class="phase"><div class="tag">v1.6.3</div><div class="d"><strong>Retomar el handoff correcto</strong><span>El handoff termina con /clear + /prime &lt;archivo exacto&gt;, y el prime acepta ese archivo o el tema: otra sesión que graba después ya no cambia el trabajo retomado.</span></div></div>
+  <div class="phase"><div class="tag">v1.7.3</div><div class="d"><strong>Trabajo en otro repo</strong><span>--repo graba el estado del repo donde ocurre el trabajo; --conferir y el prime miran allí. Avisos cuando falta --repo o las preguntas de control.</span></div></div>
   <div class="phase"><div class="tag">Fase 3</div><div class="d"><strong>Proyecto real</strong><span>Aplicarlo en un proyecto INEMA con su propio CLAUDE.md y probar una copia aislada.</span></div></div>
   <div class="phase"><div class="tag">Fase 4</div><div class="d"><strong>MCP y hooks</strong><span>Registrar en Codex solo los MCP que un proyecto necesita; los hooks pasan a ser texto en AGENTS.md cuando no hay un evento equivalente.</span></div></div>
 </div></section>
