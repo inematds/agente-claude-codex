@@ -4,9 +4,9 @@
     "dist/codex/session-handoff/SKILL.md": "8f5098eb0becb1aa",
     "dist/codex/session-handoff/agents/openai.yaml": "2ad8e31ee495d75f",
     "dist/claude/session-handoff/scripts/__pycache__/handoff-grava.cpython-312.pyc": "054a3f3c8b1b9c0e",
-    "dist/claude/session-handoff/scripts/handoff-grava.py": "87e1856286d11544",
+    "dist/claude/session-handoff/scripts/handoff-grava.py": "b5bdd41f1e2ea915",
     "dist/codex/session-handoff/scripts/__pycache__/handoff-grava.cpython-312.pyc": "054a3f3c8b1b9c0e",
-    "dist/codex/session-handoff/scripts/handoff-grava.py": "87e1856286d11544"
+    "dist/codex/session-handoff/scripts/handoff-grava.py": "b5bdd41f1e2ea915"
   },
-  "built_at": "2026-10-17T16:50:08.448Z"
+  "built_at": "2026-10-17T16:54:39.942Z"
 }

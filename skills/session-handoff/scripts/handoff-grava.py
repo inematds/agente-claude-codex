@@ -37,7 +37,7 @@ NOME = re.compile(r"^(\d{4}-\d{2}-\d{2}T\d{6}Z)")
 EST_INI = "<!-- handoff-estado:inicio -->"
 EST_FIM = "<!-- handoff-estado:fim -->"
 CITADO = re.compile(r"`([^`\s]+)`")
-EST_ARQ = re.compile(r"^- `(?P<rel>[^`]+)` · sha256:(?P<h>[0-9a-f]+|apagado) · (?P<tipo>citado|sujo)")
+EST_ARQ = re.compile(r"^- `(?P<rel>[^`]+)` · sha256:(?P<h>[0-9a-f]+|apagado|ilegivel) · (?P<tipo>citado|sujo)")
 MAX_CITADOS = 20
 MAX_SUJOS = 200
 
@@ -59,6 +59,14 @@ def sha(p):
             for bloco in iter(lambda: fh.read(1 << 20), b""):
                 h.update(bloco)
     return h.hexdigest()[:12]
+
+
+def sha_seguro(p):
+    """sha() que não derruba a gravação: arquivo ilegível vira 'ilegivel'."""
+    try:
+        return sha(p)
+    except OSError:
+        return "ilegivel"
 
 
 def rel_ok(raiz, rel):
@@ -105,7 +113,7 @@ def bloco_estado(raiz, corpo):
             p = rel_ok(raiz, rel)
             if p is None:
                 continue
-            h12 = sha(p) if p.is_file() else "apagado"
+            h12 = sha_seguro(p) if p.is_file() else "apagado"
             linhas.append(f"- `{rel}` · sha256:{h12} · sujo")
             vistos.add(rel)
         cab = [f"- commit: {commit} · branch: {br}",
@@ -119,7 +127,7 @@ def bloco_estado(raiz, corpo):
         p = rel_ok(raiz, rel)
         if p is None or not p.is_file():
             continue
-        linhas.append(f"- `{rel}` · sha256:{sha(p)} · citado")
+        linhas.append(f"- `{rel}` · sha256:{sha_seguro(p)} · citado")
         vistos.add(rel)
         n += 1
     return ("\n\n" + EST_INI + "\n## Estado gravado pelo script (não editar)\n\n"
@@ -147,7 +155,7 @@ def conferir(raiz, rel):
 
     def atual(rel):
         p = rel_ok(raiz, rel)
-        return sha(p) if p is not None and p.is_file() else "apagado"
+        return sha_seguro(p) if p is not None and p.is_file() else "apagado"
 
     for rel, (h, tipo) in arqs.items():
         agora = atual(rel)

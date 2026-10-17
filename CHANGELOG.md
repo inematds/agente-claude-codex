@@ -2,6 +2,11 @@
 
 Semver `vX.XX.YY`: patch incrementa YY; minor incrementa XX e carrega YY; só major zera.
 
+## 1.5.3 — 2026-10-17
+
+- **handoff-grava.py: arquivo ilegível não derruba a gravação.** Sujo ou citado sem permissão de leitura vira `sha256:ilegivel` no bloco de estado, em vez de abortar o handoff (inclusive na cópia ociosa do hook, onde ninguém veria o erro). Teste novo (23).
+- Limite conhecido: acima de 200 arquivos sujos a lista do bloco é cortada, e o `--conferir` acusa os excedentes como "mudou depois do handoff".
+
 ## 1.5.2 — 2026-10-17
 
 Motivo: comentários do post "Não perca o contexto" no Skool (16/10): o handoff se autocertifica (quem escreve é o agente que pode ter se perdido), handoff velho é lido como atual, e falta um número para "quanto se perdeu" ao retomar.

@@ -248,3 +248,19 @@ def test_bloco_escrito_a_mao_e_descartado(tmp_path):
     falso = CORPO + "<!-- handoff-estado:inicio -->\n- commit: deadbeef\n<!-- handoff-estado:fim -->\nfim\n"
     txt = (raiz / snap_de(rodar(raiz, "--assunto", "a", corpo=falso))).read_text()
     assert txt.count("handoff-estado:inicio") == 1 and "deadbeef" not in txt and "fim\n" in txt
+
+
+def test_arquivo_ilegivel_nao_derruba_a_gravacao(tmp_path):
+    import pytest
+    if os.geteuid() == 0:
+        pytest.skip("root lê tudo")
+    raiz = repo(tmp_path)
+    trava = raiz / "trava.bin"
+    trava.write_text("x")
+    trava.chmod(0)
+    try:
+        r = rodar(raiz, "--assunto", "a", corpo=com_citacao("trava.bin"))
+        assert "sha256:ilegivel" in (raiz / snap_de(r)).read_text()
+        assert conferir(raiz, snap_de(r)).returncode == 0
+    finally:
+        trava.chmod(0o644)
