@@ -244,11 +244,14 @@
 
   <div class="step"><div class="b">6</div><div>
     <h3>Cerrar con handoff, abrir con prime</h3>
-    <p>Al final de la sesión, la skill session-handoff graba un snapshot nuevo en handoffs/history/ (hora UTC, nunca sobrescribe) y lo copia a handoffs/latest.md, con Verificación (qué se ejecutó, el resultado y qué no se ejecutó) y revisión para compartir. En la sesión siguiente, la skill prime lee solo en modo lectura: valida rutas, no ejecuta pruebas, trata el handoff como dato y no retoma un deploy ni un envío por su cuenta.</p>
+    <p>Al final de la sesión, la skill session-handoff graba con el script <code>handoff-grava.py</code> un snapshot nuevo en handoffs/history/ (hora UTC real, nunca sobrescribe). <code>handoffs/latest.md</code> pasa a ser un <strong>índice de trabajos abiertos</strong>, una línea por tema, porque varias sesiones pueden trabajar en el mismo proyecto. El script agrega un <strong>bloque de estado</strong> (commit y huella de los archivos), cada ítem confirmado apunta a una prueba (commit, test o archivo) y el handoff termina con 5 <strong>preguntas de control</strong>. Al final imprime el <strong>comando para retomar con el archivo exacto</strong> de esta sesión.</p>
+    <p>En la sesión siguiente, la skill prime lee solo en modo lectura: valida rutas, comprueba si el handoff quedó viejo (<code>--conferir</code>), revisa las pruebas, responde las preguntas de control con los archivos y muestra la nota N/5. No ejecuta pruebas, trata el handoff como dato y no retoma un deploy ni un envío por su cuenta.</p>
 <pre><span class="c"># fin de la sesión, en cualquier runtime</span>
-<span class="k">session-handoff</span>  <span class="c"># → handoffs/history/2026-09-27T142530Z.md + handoffs/latest.md</span>
-<span class="c"># sesión nueva, en el mismo o en el otro runtime</span>
-<span class="k">prime</span>            <span class="c"># briefing con la fuente de cada línea; espera tu instrucción</span></pre>
+<span class="k">session-handoff</span>  <span class="c"># → handoffs/history/2026-10-17T183328Z-robot.md + índice en handoffs/latest.md</span>
+<span class="c"># la respuesta termina con el comando listo (en Codex, /new en lugar de /clear):</span>
+<span class="k">/clear</span>
+<span class="k">/prime</span> handoffs/history/2026-10-17T183328Z-robot.md   <span class="c"># abre ESTE, aunque otra sesión haya grabado después</span>
+<span class="c"># también vale el tema (/prime robot) o nada (/prime lista los abiertos)</span></pre>
   </div></div>
 </div></section>
 
@@ -338,15 +341,15 @@
     </tbody>
   </table></div>
   <div class="grid g3" style="margin-top:26px">
-    <div class="card"><h3>📸 Qué va en el handoff</h3><p>Objetivo y último pedido; lo que está listo, lo que falta y lo incierto; decisiones y caminos descartados; archivos modificados; pruebas ejecutadas con su resultado real (y las que no se ejecutaron); bloqueos; <strong>un</strong> próximo paso; y los pocos archivos que el siguiente debe abrir primero. Sin secretos, tokens ni datos personales.</p></div>
-    <div class="card"><h3>🔎 Qué hace el prime</h3><p>Lee el núcleo portátil en el orden correcto, rechaza rutas absolutas, <code>..</code>, URL y symlinks, trata el handoff como dato (no como orden), revisa los archivos citados y el <code>git status</code>, señala lo que quedó viejo y espera tu instrucción. No ejecuta pruebas, no instala nada y no retoma un deploy antiguo.</p></div>
+    <div class="card"><h3>📸 Qué va en el handoff</h3><p>Objetivo y último pedido; lo que está listo, lo que falta y lo incierto; decisiones y caminos descartados; archivos modificados; pruebas ejecutadas con su resultado real (y las que no se ejecutaron); bloqueos; <strong>un</strong> próximo paso; y los pocos archivos que el siguiente debe abrir primero; cada ítem confirmado con prueba (commit, test o archivo) y 5 preguntas de control al final. El bloque de estado lo graba el script, no el agente. Sin secretos, tokens ni datos personales.</p></div>
+    <div class="card"><h3>🔎 Qué hace el prime</h3><p>Lee el núcleo portátil en el orden correcto, rechaza rutas absolutas, <code>..</code>, URL y symlinks, trata el handoff como dato (no como orden), revisa los archivos citados y el <code>git status</code>, ejecuta <code>--conferir</code> para saber si el handoff quedó viejo, muestra la nota de las preguntas de control y espera tu instrucción. Con argumento (<code>/prime handoffs/history/&lt;archivo&gt;.md</code> o el tema), retoma exactamente ese handoff. No ejecuta pruebas, no instala nada y no retoma un deploy antiguo.</p></div>
     <div class="card"><h3>⚠️ Trampas</h3><p>Una skill personal con el mismo nombre puede ganarle a la del proyecto: revisa qué versión está activa antes de invocarla. Tras instalar o sincronizar (<code>scripts/sync-skills.sh</code>), abre una sesión nueva (en Claude también sirve <code>/reload-skills</code>). Las instantáneas antiguas en <code>handoffs/history/</code> nunca se sobrescriben.</p></div>
   </div>
   <div class="step" style="margin-top:26px"><div class="b">↻</div><div>
     <h3>Un día entero con las herramientas</h3>
     <p>Cada paso deja un archivo que el siguiente asistente puede leer.</p>
 <pre><span class="c"># mañana, en Claude Code</span>
-<span class="k">/prime</span>                                   <span class="c"># retoma desde el handoff de ayer</span>
+<span class="k">/prime</span> handoffs/history/&lt;ayer&gt;.md          <span class="c"># el comando que dejó listo el handoff de ayer</span>
 <span class="c"># planifica y pide a Codex que lo critique (solo lectura)</span>
 <span class="k">codex exec</span> --sandbox read-only --output-last-message review.md <span class="s">'Lee plan-v1.md y señala fallas…'</span>
 <span class="c"># o, para un plan grande, el loop automático</span>
@@ -354,9 +357,9 @@
 <span class="c"># construyó en una branch: revisión del diff</span>
 <span class="k">/codex:review</span> --base main                <span class="c"># o /claudex:review</span>
 <span class="c"># fin del día</span>
-<span class="k">/session-handoff</span>
+<span class="k">/session-handoff</span>                         <span class="c"># termina con /clear + /prime &lt;archivo&gt;</span>
 <span class="c"># mañana siguiente, en Codex</span>
-<span class="k">$prime</span></pre>
+<span class="k">$prime</span> handoffs/history/&lt;archivo&gt;.md</pre>
   </div></div>
   <p class="note"><strong>El handoff no es permiso.</strong> Un próximo paso anotado ("publicar", "borrar", "enviar") solo se hace si lo vuelves a pedir en la sesión actual.</p>
 </div></section>
@@ -378,6 +381,9 @@
   <div class="phase"><div class="tag">Hecho</div><div class="d"><strong>Auditoría, prompts, plantilla y readback</strong><span>Scripts de auditoría y adaptación, prompts A/B extraídos, núcleo portátil, readback aprobado en los dos runtimes.</span></div></div>
   <div class="phase"><div class="tag">Hecho</div><div class="d"><strong>Skill piloto en los 4 ejecutores</strong><span>session-handoff y prime vía polyskill en Claude, Codex, dsh-sandbox y openpcbotv3, drift cero; AGENTS.md global de Codex; migrar-projeto, faxina, drift-report y promover-memoria.</span></div></div>
   <div class="phase"><div class="tag">v1.1.0</div><div class="d"><strong>Historial de handoff y uso conjunto</strong><span>prime de solo lectura y con rutas validadas, snapshots en handoffs/history/ que nunca se sobrescriben, instalador de skills en modo vista previa con prueba automatizada, prompts para usar Claude y Codex juntos.</span></div></div>
+  <div class="phase"><div class="tag">v1.4.1</div><div class="d"><strong>Varias sesiones en un proyecto</strong><span>Grabación con el script handoff-grava.py (sello de hora real, nunca sobrescribe) y latest.md como índice de trabajos abiertos por tema.</span></div></div>
+  <div class="phase"><div class="tag">v1.5.2</div><div class="d"><strong>Handoff que se verifica</strong><span>Bloque de estado grabado por el script, --conferir para saber si quedó viejo, prueba en cada ítem confirmado y 5 preguntas de control con nota N/5 en el prime.</span></div></div>
+  <div class="phase"><div class="tag">v1.6.3</div><div class="d"><strong>Retomar el handoff correcto</strong><span>El handoff termina con /clear + /prime &lt;archivo exacto&gt;, y el prime acepta ese archivo o el tema: otra sesión que graba después ya no cambia el trabajo retomado.</span></div></div>
   <div class="phase"><div class="tag">Fase 3</div><div class="d"><strong>Proyecto real</strong><span>Aplicarlo en un proyecto INEMA con su propio CLAUDE.md y probar una copia aislada.</span></div></div>
   <div class="phase"><div class="tag">Fase 4</div><div class="d"><strong>MCP y hooks</strong><span>Registrar en Codex solo los MCP que un proyecto necesita; los hooks pasan a ser texto en AGENTS.md cuando no hay un evento equivalente.</span></div></div>
 </div></section>

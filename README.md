@@ -148,6 +148,13 @@ Na próxima sessão, em qualquer runtime, a skill `prime` lê esses arquivos **s
 - **Ponteiro, não prosa**: todo `[confirmed]` leva `commit <hash>`, `teste: …` ou `arquivo: …`; o `prime` confere e rebaixa a `[unverified]` o que não tiver prova.
 - **Perguntas-teste**: o handoff termina com 5 perguntas fixas (tarefa e critério, última decisão e por quê, o que não pode mudar, o que está pela metade, próxima ação), cada uma com a fonte num arquivo do projeto. Quem retoma responde pelos arquivos, compara e mostra "Perguntas-teste: N/5"; o que diverge é lacuna do handoff e não vira ação sem você confirmar.
 
+**Retomar o handoff certo (1.6.3).** Com várias sessões no mesmo projeto, o `/prime` sem argumento abre o handoff mais novo, que pode ser de outra sessão. Agora o `handoff-grava.py` termina imprimindo o comando com o arquivo exato, e a skill session-handoff fecha a resposta com ele:
+```
+/clear                                              # no Codex: /new
+/prime handoffs/history/2026-10-17T183328Z-robot.md
+```
+O `prime` aceita esse caminho (usa exatamente esse snapshot; se houver um mais novo do mesmo assunto, avisa como conflito) ou o assunto (`/prime robot`). Sem argumento, lista os trabalhos abertos como antes.
+
 ## Usar por prompt, sem scripts
 
 | Arquivo | Quando usar |
