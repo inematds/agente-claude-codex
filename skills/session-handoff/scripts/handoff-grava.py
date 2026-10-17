@@ -398,6 +398,11 @@ def main():
         print(f"legado preservado: {legado.relative_to(raiz)}")
     print(f"latest.md: {len(lido)} assunto(s) aberto(s): {', '.join(sorted(lido)) or 'nenhum'}")
     print(commitar(raiz, gravados, a.assunto, a.fechado) if not a.sem_commit else "sem commit (--sem-commit)")
+    if not a.fechado and not a.indexar:
+        # Caminho exato deste snapshot: outra sessão pode gravar um handoff mais novo no mesmo projeto.
+        print("retomar ESTE handoff numa sessão nova (Codex: /new no lugar de /clear):")
+        print("  /clear")
+        print(f"  /prime {rel}")
 
 
 if __name__ == "__main__":

@@ -92,6 +92,12 @@ Antes de gravar, confira e declare na seção própria que o texto **não conté
    - lê de volta e confere;
    - se a raiz for repositório git, faz **um commit só com o snapshot e o `latest.md`** (`git commit -- <caminhos>`: o que outra pessoa deixou staged fica fora), autor = config do repo. **Nunca faz push.** `--sem-commit` desliga.
 4. **Confira a saída** do script (snapshot, assuntos abertos, linha do commit) e informe ao usuário em uma linha. Se ele falhar, mostre o erro e deixe o resumo no chat; não grave à mão.
+   **Termine a resposta com o comando de retomada pronto para copiar**, exatamente como o script imprimiu (caminho do snapshot **desta** gravação, não o slug nem "o último"):
+   ```
+   /clear
+   /prime handoffs/history/<AAAA-MM-DDTHHMMSSZ>-<slug>.md
+   ```
+   No Codex, `/new` no lugar de `/clear`. Motivo: outra sessão pode gravar um handoff mais novo no mesmo projeto, e o `/prime` sem argumento abre o mais recente, que pode não ser o seu.
 5. **Push** fica com o usuário ou com o fluxo de publicação do projeto. Lembre de revisar antes de compartilhar com outro provedor.
 
 ## Marcadores de confiança

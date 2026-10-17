@@ -264,3 +264,18 @@ def test_arquivo_ilegivel_nao_derruba_a_gravacao(tmp_path):
         assert conferir(raiz, snap_de(r)).returncode == 0
     finally:
         trava.chmod(0o644)
+
+
+def test_imprime_comando_de_retomada_com_o_snapshot_exato(tmp_path):
+    r = rodar(tmp_path, "--assunto", "robot", "--sem-commit")
+    snap = re.search(r"snapshot: (handoffs/history/\S+)", r.stdout)[1]
+    linhas = r.stdout.splitlines()
+    assert linhas[-2:] == ["  /clear", f"  /prime {snap}"]
+    # outra sessão grava depois no mesmo projeto: o comando desta continua apontando o seu
+    r2 = rodar(tmp_path, "--assunto", "outro", "--sem-commit")
+    assert f"/prime {snap}" not in r2.stdout
+
+
+def test_fechado_nao_imprime_comando_de_retomada(tmp_path):
+    r = rodar(tmp_path, "--assunto", "robot", "--sem-commit", "--fechado")
+    assert "/prime" not in r.stdout

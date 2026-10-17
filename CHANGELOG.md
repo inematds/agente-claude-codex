@@ -2,6 +2,15 @@
 
 Semver `vX.XX.YY`: patch incrementa YY; minor incrementa XX e carrega YY; só major zera.
 
+## 1.6.3 — 2026-10-17
+
+Motivo: o `/prime` sem argumento abre o handoff mais recente do projeto; se outra sessão gravou depois, a sessão nova retomava o trabalho errado (pedido do Nei, 17/10).
+
+- **handoff-grava.py imprime o comando de retomada** com o caminho exato do snapshot gravado: `/clear` + `/prime handoffs/history/<arquivo>.md` (no Codex, `/new`). Não imprime com `--fechado` nem `--indexar`. Testes 23 → 25.
+- **session-handoff**: a resposta termina com esse comando pronto para copiar.
+- **prime aceita argumento**: caminho do snapshot (usa exatamente esse, mesmo com outros mais novos; snapshot mais novo do mesmo assunto vira conflito) ou slug do assunto. Sem argumento, igual a antes.
+- Instaladas em `~/.claude/skills` e `~/.agents/skills` (`--apply --replace`, backup feito). Cópias PT/EN no skillmanager3x. `dsh` e `v3` já estavam em drift antes desta versão e não foram tocados.
+
 ## 1.5.3 — 2026-10-17
 
 - **handoff-grava.py: arquivo ilegível não derruba a gravação.** Sujo ou citado sem permissão de leitura vira `sha256:ilegivel` no bloco de estado, em vez de abortar o handoff (inclusive na cópia ociosa do hook, onde ninguém veria o erro). Teste novo (23).
