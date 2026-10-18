@@ -471,6 +471,9 @@ def main():
         if not any(s in corpo for s in ("## Perguntas-teste", "## Test questions", "## Preguntas de control")):
             avisos.append("aviso: handoff sem a seção Perguntas-teste — o prime não vai dar a nota N/5; "
                           "grave de novo com as 5 perguntas do modelo.")
+        if not any(s in corpo for s in ("## Não fazer", "## Do not do", "## No hacer")):
+            avisos.append("aviso: falta a seção Não fazer (restrições e travas) — o prime não terá a lista do que "
+                          "não pode mudar; grave de novo com todas as restrições, uma por item.")
         corpo = corpo.rstrip() + "\n" + bloco_estado(raiz, corpo, repos)
         carimbo = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
         snap = criar_exclusivo(hist, f"{carimbo}-{a.assunto}", corpo)

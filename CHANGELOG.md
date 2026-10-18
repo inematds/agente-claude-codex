@@ -2,6 +2,16 @@
 
 Semver `vX.XX.YY`: patch incrementa YY; minor incrementa XX e carrega YY; só major zera.
 
+## 1.8.3 — 2026-10-18
+
+Motivo: o briefing do `/prime` mostrava uma única "Regra principal"; com três restrições, duas ficavam de fora, e é a que fica de fora que o agente viola ao retomar. "Pela metade" e o porquê da próxima ação também não tinham lugar próprio (análise com o Nei, 18/10, a partir dos comentários do Skool).
+
+- **session-handoff**: "Decisões e restrições" vira duas seções — **Decisões** (todas as que ainda valem) e **Não fazer (restrições e travas)**, todas, uma por item, com fonte. Seção nova **Pela metade** (começado, onde parou, o que falta). Próxima ação traz o porquê; pergunta-teste 5 vira "Qual é a próxima ação, por quê, e ela precisa de aprovação?". Regra 9 explica a seção Não fazer.
+- **handoff-grava.py**: aviso (sem bloquear) quando falta a seção Não fazer. Testes 30 → 31.
+- **prime**: passo 6b' (ler a seção Não fazer inteira e conferir a fonte de cada item) e três linhas no briefing — **Pela metade**, **Não fazer** (completa, mais as regras do AGENTS/CLAUDE que tocam a tarefa; handoff antigo cai em "Decisões e restrições") e **por quê** na próxima ação.
+- `template/handoffs/latest.md` com as seções novas. Par com hook-longrun 1.8.4 (execucao-longa): mesma pergunta 5.
+- Fora de escopo, de propósito: juiz automático da nota e cobertura por transcrição. Voltam se houver caso real de perda ou nota média < 4/5 após 2–3 semanas de medições.
+
 ## 1.7.3 — 2026-10-17
 
 Motivo: o handoff do robot-v2 foi gravado no `~/projetos/wifi`, mas o trabalho acontece no `~/projetos/robot`; o `--conferir` olhava o repo errado. E um handoff saiu sem Perguntas-teste sem ninguém perceber (pedido do Nei, 17/10).

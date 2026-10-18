@@ -327,6 +327,14 @@ def test_avisa_handoff_sem_perguntas_teste(tmp_path):
     assert "aviso: handoff sem" not in r2.stdout
 
 
+def test_avisa_handoff_sem_nao_fazer(tmp_path):
+    r = rodar(tmp_path, "--assunto", "x", "--sem-commit")
+    assert "aviso: falta a seção Não fazer" in r.stdout
+    r2 = rodar(tmp_path, "--assunto", "y", "--sem-commit",
+               corpo=CORPO + "\n## Não fazer (restrições e travas)\n- não publicar — fonte: `x`\n")
+    assert "Não fazer" not in r2.stdout
+
+
 def test_repo_com_mais_de_200_sujos_fica_igual_e_acusa_mudanca(tmp_path):
     proj = tmp_path / "proj"
     proj.mkdir()

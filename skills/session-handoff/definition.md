@@ -85,7 +85,7 @@ Antes de gravar, confira e declare na seção própria que o texto **não conté
 2. **Escolha o assunto (slug)**: rode `python3 <script> --raiz <raiz> --listar`. Se o trabalho desta sessão já está no índice, **reuse o mesmo slug** (ex.: `rea-es`, nunca `rea-es-2` nem `rea-es-fechamento`). Trabalho novo: slug curto, minúsculas e hífen. Várias sessões podem gravar no mesmo projeto ao mesmo tempo; cada uma cuida só do seu assunto.
 3. **Grave**: `python3 <script> --raiz <raiz> --assunto <slug> < corpo.md` (o corpo pode vir por heredoc). Se o trabalho terminou (pronto, entregue ou abandonado pelo usuário), acrescente `--fechado`: o snapshot é gravado e o assunto sai do índice.
    **Trabalho em outro repositório** (a sessão está aberta num projeto, ex.: `~/projetos/wifi`, mas edita outro, ex.: `~/projetos/robot`): acrescente `--repo <caminho>` (um por repo; até 5). O bloco de estado passa a guardar o commit e os arquivos alterados desse repo, e o `--conferir` confere lá também. Cite o caminho do repo no corpo, em "Projeto e escopo".
-   **Avisos do script** (`aviso: …` na saída): corpo cita outro repo sem `--repo`, ou falta a seção Perguntas-teste. Corrija e grave de novo (o snapshot anterior fica no histórico; é normal). O script:
+   **Avisos do script** (`aviso: …` na saída): corpo cita outro repo sem `--repo`, ou falta a seção Perguntas-teste ou a Não fazer. Corrija e grave de novo (o snapshot anterior fica no histórico; é normal). O script:
    - cria `handoffs/history/<AAAA-MM-DDTHHMMSSZ>-<slug>.md` com gravação exclusiva (sufixo `-2`… se existir) e nunca edita snapshot antigo;
    - recusa symlink e caminho fora da raiz;
    - preserva uma vez o `latest.md` legado (cópia integral que não está em `history/`) como `<carimbo-do-mtime>-anterior.md`;
@@ -132,9 +132,13 @@ Caminhos: **dentro do projeto, relativos à raiz** (o arquivo viaja entre máqui
 - [?] <item incerto> — <o que checar>
 - (ou "nenhum")
 
-## Decisões e restrições
-- <decisão> — <motivo>; direções rejeitadas que importam
+## Decisões
+- <decisão que ainda vale (não só a última)> — <motivo>; direções rejeitadas que importam
 - (ou "nenhuma")
+
+## Não fazer (restrições e travas)
+- <restrição do usuário, trava ou "não mexer em X"> — fonte: <arquivo do projeto, commit, ou "dito pelo usuário em DD/MM, gravado em <arquivo>">
+- (todas, uma por item, inclusive as ditas só nesta conversa; ou "nenhuma")
 
 ## Arquivos alterados
 - `<caminho relativo>` — <propósito>; marque trabalho pré-existente sem assumir autoria
@@ -157,8 +161,11 @@ Caminhos: **dentro do projeto, relativos à raiz** (o arquivo viaja entre máqui
 - Aberta: <pergunta que precisa do usuário> — <contexto>
 - Adiado: <item> — <por quê>
 
+## Pela metade
+- <o que foi começado e não terminou> — parou em: <ponto exato> — falta: <o quê> (ou "nada")
+
 ## Próxima ação exata
-<1-3 linhas: ação mais provável e a aprovação que ela exige. Se houver ramos, liste (ex.: "A se o teste passar, B se falhar").>
+<1-3 linhas: ação mais provável, por que ela vem agora, e a aprovação que ela exige. Se houver ramos, liste (ex.: "A se o teste passar, B se falhar").>
 
 ## Mapa de retomada
 - `<caminho relativo>` — <por que ler primeiro> (3 a 6 arquivos no máximo)
@@ -168,7 +175,7 @@ Caminhos: **dentro do projeto, relativos à raiz** (o arquivo viaja entre máqui
 2. Qual foi a última decisão e por quê? → <resposta curta> — fonte: <…>
 3. O que não pode mudar (restrição do usuário ou trava)? → <resposta curta> — fonte: <…>
 4. O que está pela metade? → <resposta curta> — fonte: <…>
-5. Qual é a próxima ação e ela precisa de aprovação? → <resposta curta> — fonte: <…>
+5. Qual é a próxima ação, por quê, e ela precisa de aprovação? → <resposta curta> — fonte: <…>
 
 ## Checagem de compartilhamento
 - Sem segredos, tokens, cookies, dados pessoais ou endpoints privados: <sim / o que foi omitido e por qual canal passar>
@@ -184,3 +191,4 @@ Caminhos: **dentro do projeto, relativos à raiz** (o arquivo viaja entre máqui
 6. **Sem recomendações além da "Próxima ação exata".** O próximo agente decide.
 7. **Handoff não é autorização**: não escreva a próxima ação como ordem para deploy, publicação, envio ou compra sem dizer que precisa de confirmação do usuário.
 8. **Perguntas-teste**: sempre as 5, nesta ordem, com resposta de uma linha. A fonte é **um arquivo do projeto ou um commit, nunca o próprio handoff** (`decisions.md`, `tasks/current.md`, `goal.md`, `CLAUDE.md`, o commit…). Se a resposta só existe na conversa, grave-a antes num arquivo do projeto (ex.: a decisão em `decisions.md`) e aponte para ele, ou escreva "fonte: só nesta conversa". É por elas que o `prime` (e a sessão retomada depois de compactar) mede o que foi recuperado: quem retoma responde pelos arquivos e compara.
+9. **Não fazer**: liste **todas** as restrições e travas que valem para o trabalho, não só a principal: o que o usuário proibiu ou limitou nesta sessão, travas do projeto que tocam a tarefa e "não mexer em X". É a seção que o `prime` mostra inteira ao retomar; restrição fora dela é a que o próximo agente viola. Dita só na conversa: grave antes num arquivo do projeto e aponte, ou escreva "dito pelo usuário em DD/MM, só nesta conversa".

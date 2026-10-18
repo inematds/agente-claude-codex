@@ -157,6 +157,8 @@ O `prime` aceita esse caminho (usa exatamente esse snapshot; se houver um mais n
 
 **Trabalho em outro repo (1.7.3).** Se a sessão está aberta num projeto mas edita outro (ex.: aberta no `wifi`, trabalhando no `robot`), grave com `--repo ~/projetos/robot`: o bloco de estado guarda também o commit e os arquivos alterados desse repo, o `--conferir` confere os dois, e o `prime` busca o estado real lá quando precisar. O script avisa (`aviso: …`) quando o corpo cita outro repo sem `--repo` e quando falta a seção Perguntas-teste.
 
+**Não fazer completo (1.8.3).** O handoff separa **Decisões** de **Não fazer (restrições e travas)**, esta com todas as restrições, uma por item e com fonte, e ganha **Pela metade** e o porquê da próxima ação. O `prime` mostra a lista Não fazer inteira no briefing (não uma regra só); o script avisa quando a seção falta.
+
 ## Usar por prompt, sem scripts
 
 | Arquivo | Quando usar |
