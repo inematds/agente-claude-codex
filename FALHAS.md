@@ -2,6 +2,7 @@
 
 | data | o que quebrou | menor correção | prompt \| infra |
 |---|---|---|---|
+| 2026-10-20 | `latest.md` sem trava: 8 gravações de handoff ao mesmo tempo perdiam linha do índice; e o índice só encolhia com `--fechado` (wifi: 42 abertos, 11 parados havia > 3 dias) | `flock` na pasta history/ durante leitura→gravação→commit + mover para Parados quem passou de 3 dias sem handoff | infra |
 | 2026-10-17 | `/prime` sem argumento abria o handoff mais novo do projeto; com várias sessões no mesmo projeto (wifi tinha 12 assuntos abertos), a sessão nova pegava o de outra | `handoff-grava.py` imprime `/clear` + `/prime <snapshot exato>`; prime aceita o caminho; hook 1.7.1 cita o da sessão | infra |
 | 2026-10-13 | menu do guia estourava 84–371 px entre 800 e 1024 e quebrava os rótulos em 2–3 linhas até 1440 (8 links não cabem na `.wrap` de 1160 px); só tinha sido medido em 360/1280 | `white-space:nowrap` no nav, 4 links secundários ocultos (`.sec2`), links somem < 1240 px; medido 390–1920 nos 3 idiomas | prompt |
 | 2026-10-05 | handoff da sessão MODS ficou só no chat: `~/projetos/wifi` tem só `CLAUDE.md` (sem `handoffs/` nem `AGENTS.md`), o session-handoff não gravou e o `/prime` seguinte não achou nada | condição de gravar inclui `CLAUDE.md` + `mkdir -p handoffs/history` | prompt |

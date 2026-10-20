@@ -42,6 +42,11 @@ CITADO = re.compile(r"`([^`\s]+)`")
 EST_ARQ = re.compile(r"^- `(?P<rel>[^`]+)` · sha256:(?P<h>[0-9a-f]+|apagado|ilegivel) · (?P<tipo>citado|sujo)")
 MAX_CITADOS = 20
 MAX_SUJOS = 200
+PAR_INI = "<!-- handoff-parados:inicio -->"
+PAR_FIM = "<!-- handoff-parados:fim -->"
+PARADO_DIAS = 3      # sem handoff novo há mais que isso: sai dos abertos (fica em "Parados")
+MAX_PARADOS = 50     # teto da lista de parados no latest.md; os snapshots nunca são apagados
+TRAVA_SEG = 60
 
 
 GRANDE = 100 * 1024 * 1024
@@ -306,6 +311,54 @@ def entradas_de(texto):
     return ent
 
 
+def ler_parados(latest):
+    try:
+        txt = latest.read_text(encoding="utf-8")
+    except OSError:
+        return {}
+    if PAR_INI not in txt or PAR_FIM not in txt:
+        return {}
+    return entradas_de(txt.split(PAR_INI, 1)[1].split(PAR_FIM, 1)[0])
+
+
+def separar_parados(raiz, entradas, parados, dias, atual):
+    """Abertos sem handoff há mais de `dias` viram parados (menos o assunto desta gravação). Devolve os movidos."""
+    if dias <= 0:
+        return []
+    limite = dt.datetime.now().timestamp() - dias * 86400
+    movidos = [s for s, (arq, _) in entradas.items() if s != atual and idade(raiz, arq) < limite]
+    for s in movidos:
+        parados[s] = entradas.pop(s)
+    return movidos
+
+
+class Trava:
+    """flock exclusivo na pasta handoffs/history: vários terminais gravando o índice ao mesmo tempo
+    esperam a vez em vez de um apagar a linha do outro. Sem arquivo extra no repo."""
+
+    def __init__(self, pasta):
+        self.pasta = pasta
+        self.fd = None
+
+    def __enter__(self):
+        import fcntl
+        self.fd = os.open(self.pasta, os.O_RDONLY)
+        fim = dt.datetime.now().timestamp() + TRAVA_SEG
+        while True:
+            try:
+                fcntl.flock(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                return self
+            except BlockingIOError:
+                if dt.datetime.now().timestamp() > fim:
+                    os.close(self.fd)
+                    erro(f"índice travado por outra gravação há mais de {TRAVA_SEG}s; tente de novo")
+                import time
+                time.sleep(0.05)
+
+    def __exit__(self, *_):
+        os.close(self.fd)  # fechar solta o flock
+
+
 def ler_indice(latest):
     """(entradas {slug: (arq, quando)}, formato) do latest.md atual. Se uma sessão com a skill antiga
     sobrescreveu o latest.md, o índice volta do handoffs/indice.txt (cópia gravada ao lado)."""
@@ -367,15 +420,22 @@ def ordenar(raiz, entradas):
     return sorted(entradas.items(), key=lambda kv: idade(raiz, kv[1][0]), reverse=True)
 
 
-def montar_latest(raiz, entradas, atual_rel, corpo):
+def montar_latest(raiz, entradas, atual_rel, corpo, parados=None, dias=PARADO_DIAS):
     linhas = [f"- `{s}` · {a} · {q}" for s, (a, q) in ordenar(raiz, entradas)]
     abertos = "\n".join(linhas) if linhas else "- nenhum"
+    par = ""
+    if parados:
+        lp = "\n".join(f"- `{s}` · {a} · {q}" for s, (a, q) in ordenar(raiz, parados))
+        par = (f"\n## Parados (sem handoff há mais de {dias} dias)\n\n"
+               "Fora dos abertos: o /prime não lista. Gravar um handoff com o mesmo slug volta o assunto "
+               f"para os abertos; `--fechado` tira daqui. Snapshots continuam em handoffs/history/.\n\n"
+               f"{PAR_INI}\n{lp}\n{PAR_FIM}\n")
     rodape = (f"\n---\n\nCópia integral do snapshot mais recente ({atual_rel}):\n\n{corpo}"
               if atual_rel else "\n---\n\nNenhum trabalho aberto.\n")
     return (f"# Handoffs — trabalhos abertos\n\n"
             "Cada linha é um assunto em andamento: leia o snapshot do assunto que for continuar. "
             "Gravado por handoff-grava.py.\n\n"
-            f"{INICIO}\n{abertos}\n{FIM}\n{rodape}")
+            f"{INICIO}\n{abertos}\n{FIM}\n{par}{rodape}")
 
 
 def git(raiz, *args):
@@ -410,6 +470,8 @@ def main():
     ap.add_argument("--sem-commit", action="store_true")
     ap.add_argument("--repo", action="append", default=[],
                     help="repositório git onde o trabalho acontece, fora da raiz do handoff (pode repetir)")
+    ap.add_argument("--parado-dias", type=int, default=int(os.environ.get("HANDOFF_PARADO_DIAS", PARADO_DIAS)),
+                    help=f"assunto sem handoff há mais que isso sai dos abertos (padrão {PARADO_DIAS}; 0 desliga)")
     a = ap.parse_args()
 
     raiz = pathlib.Path(a.raiz).absolute()
@@ -420,11 +482,12 @@ def main():
     if a.conferir:
         conferir(raiz, a.conferir)
         return
-    entradas, formato = ler_indice(latest)
-
     if a.listar:
+        entradas, formato = ler_indice(latest)
         for s, (arq, q) in ordenar(raiz, entradas):
             print(f"{s}\t{arq}\t{q}")
+        for s, (arq, q) in ordenar(raiz, ler_parados(latest)):
+            print(f"{s}\t{arq}\t{q}\tparado")
         if formato != "indice":
             print(f"(latest.md sem índice: formato {formato})", file=sys.stderr)
         return
@@ -436,19 +499,9 @@ def main():
     if latest.exists():
         sem_symlink(raiz, latest)
 
-    gravados, avisos = [], []
-    legado = preservar_legado(raiz, latest, formato)
-    if legado:
-        gravados.append(legado)
-        entradas.setdefault("anterior", (str(legado.relative_to(raiz)), quando_de(legado)))
-
-    if a.indexar:
-        snap = (raiz / a.indexar)
-        sem_symlink(raiz, snap)
-        if not snap.is_file() or snap.parent.resolve() != hist.resolve():
-            erro(f"--indexar precisa de um arquivo em handoffs/history/: {a.indexar}")
-        corpo = snap.read_text(encoding="utf-8")
-    else:
+    # Parte lenta (hash dos arquivos) fora da trava; índice, gravação e commit dentro dela.
+    avisos, corpo = [], None
+    if not a.indexar:
         corpo = sys.stdin.read()
         if len(corpo.strip()) < 200:
             erro("corpo do handoff vazio ou curto demais (stdin)")
@@ -463,7 +516,6 @@ def main():
                 erro(f"--repo precisa ser um repositório git: {r}")
             if pathlib.Path(top).resolve() != raiz.resolve() and pathlib.Path(top) not in repos:
                 repos.append(pathlib.Path(top))
-        avisos = []
         soltos = [c for c in repos_citados(raiz, corpo) if pathlib.Path(c) not in repos]
         if soltos:
             avisos.append("aviso: o handoff cita outro(s) repo(s) sem --repo: " + ", ".join(soltos)
@@ -475,44 +527,73 @@ def main():
             avisos.append("aviso: falta a seção Não fazer (restrições e travas) — o prime não terá a lista do que "
                           "não pode mudar; grave de novo com todas as restrições, uma por item.")
         corpo = corpo.rstrip() + "\n" + bloco_estado(raiz, corpo, repos)
-        carimbo = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
-        snap = criar_exclusivo(hist, f"{carimbo}-{a.assunto}", corpo)
-        gravados.append(snap)
 
-    rel = str(snap.relative_to(raiz))
-    if a.fechado:
-        entradas.pop(a.assunto, None)
-    else:
-        entradas[a.assunto] = (rel, quando_de(snap))
+    with Trava(hist):
+        entradas, formato = ler_indice(latest)
+        parados = ler_parados(latest)
+        gravados = []
+        legado = preservar_legado(raiz, latest, formato)
+        if legado:
+            gravados.append(legado)
+            entradas.setdefault("anterior", (str(legado.relative_to(raiz)), quando_de(legado)))
 
-    # O rodapé mostra o snapshot mais novo entre os abertos (ou este, se acabou de ser gravado).
-    if entradas:
-        mais_novo = ordenar(raiz, entradas)[0][1][0]
-        rodape_rel = rel if (not a.fechado and not a.indexar) else mais_novo
-        rodape = (raiz / rodape_rel).read_text(encoding="utf-8")
-    else:
-        rodape_rel, rodape = None, ""
-    novo = montar_latest(raiz, entradas, rodape_rel, rodape)
-    tmp = latest.with_suffix(".md.tmp")
-    tmp.write_text(novo, encoding="utf-8")
-    os.replace(tmp, latest)
-    indice = latest.with_name("indice.txt")
-    if indice.exists():
-        sem_symlink(raiz, indice)
-    indice.write_text("".join(f"- `{s}` · {a} · {q}\n" for s, (a, q) in ordenar(raiz, entradas)), encoding="utf-8")
+        if a.indexar:
+            snap = (raiz / a.indexar)
+            sem_symlink(raiz, snap)
+            if not snap.is_file() or snap.parent.resolve() != hist.resolve():
+                erro(f"--indexar precisa de um arquivo em handoffs/history/: {a.indexar}")
+        else:
+            carimbo = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+            snap = criar_exclusivo(hist, f"{carimbo}-{a.assunto}", corpo)
+            gravados.append(snap)
 
-    # leitura de volta
-    lido, fmt = ler_indice(latest)
-    if fmt != "indice" or (not a.fechado and lido.get(a.assunto, ("",))[0] != rel):
-        erro("leitura de volta do latest.md não bate")
-    gravados += [latest, indice]
+        rel = str(snap.relative_to(raiz))
+        parados.pop(a.assunto, None)
+        if a.fechado:
+            entradas.pop(a.assunto, None)
+        else:
+            entradas[a.assunto] = (rel, quando_de(snap))
+        movidos = separar_parados(raiz, entradas, parados, a.parado_dias, a.assunto)
+        par_ord = ordenar(raiz, parados)
+        cortados = len(par_ord) - MAX_PARADOS
+        parados = dict(par_ord[:MAX_PARADOS])
+
+        # O rodapé mostra o snapshot mais novo entre os abertos (ou este, se acabou de ser gravado).
+        if entradas:
+            mais_novo = ordenar(raiz, entradas)[0][1][0]
+            rodape_rel = rel if (not a.fechado and not a.indexar) else mais_novo
+            rodape = (raiz / rodape_rel).read_text(encoding="utf-8")
+        else:
+            rodape_rel, rodape = None, ""
+        novo = montar_latest(raiz, entradas, rodape_rel, rodape, parados, a.parado_dias)
+        tmp = latest.with_suffix(".md.tmp")
+        tmp.write_text(novo, encoding="utf-8")
+        os.replace(tmp, latest)
+        indice = latest.with_name("indice.txt")
+        if indice.exists():
+            sem_symlink(raiz, indice)
+        indice.write_text("".join(f"- `{s}` · {a2} · {q}\n" for s, (a2, q) in ordenar(raiz, entradas)),
+                          encoding="utf-8")
+
+        # leitura de volta
+        lido, fmt = ler_indice(latest)
+        if fmt != "indice" or (not a.fechado and lido.get(a.assunto, ("",))[0] != rel):
+            erro("leitura de volta do latest.md não bate")
+        gravados += [latest, indice]
+        resultado_commit = commitar(raiz, gravados, a.assunto, a.fechado) if not a.sem_commit \
+            else "sem commit (--sem-commit)"
 
     print(f"snapshot: {rel}")
     if legado:
         print(f"legado preservado: {legado.relative_to(raiz)}")
     print(f"latest.md: {len(lido)} assunto(s) aberto(s): {', '.join(sorted(lido)) or 'nenhum'}")
-    print(commitar(raiz, gravados, a.assunto, a.fechado) if not a.sem_commit else "sem commit (--sem-commit)")
-    for av in (avisos if not a.indexar else []):
+    if movidos:
+        print(f"{len(movidos)} assunto(s) sem handoff há mais de {a.parado_dias} dias movido(s) para os parados: "
+              + ", ".join(sorted(movidos)))
+    if cortados > 0:
+        print(f"{cortados} parado(s) mais antigo(s) saíram da lista (snapshots seguem em handoffs/history/)")
+    print(resultado_commit)
+    for av in avisos:
         print(av)
     if not a.fechado and not a.indexar:
         # Caminho exato deste snapshot: outra sessão pode gravar um handoff mais novo no mesmo projeto.

@@ -2,6 +2,15 @@
 
 Semver `vX.XX.YY`: patch incrementa YY; minor incrementa XX e carrega YY; só major zera.
 
+## 1.9.3 — 2026-10-20
+
+Motivo: com vários terminais no mesmo projeto, o `latest.md` é o único arquivo que todos regravam. Sem trava, duas gravações ao mesmo tempo perdiam linha do índice (reproduzido: 8 gravações simultâneas → "leitura de volta não bate"). E o índice só encolhia com `--fechado`, que quase ninguém usa: o wifi tinha 42 assuntos "abertos", 11 sem handoff havia mais de 3 dias (pedido do Nei, 20/10, a partir de comentário no Skool).
+
+- **handoff-grava.py — trava**: `flock` exclusivo na pasta `handoffs/history/` da leitura do índice até o commit (espera até 60 s; sem arquivo extra no repo). O hash dos arquivos (parte lenta) fica fora da trava.
+- **handoff-grava.py — parados**: assunto sem handoff há mais de 3 dias sai dos abertos para o bloco `<!-- handoff-parados:inicio/fim -->` (teto de 50, os mais recentes). Gravar com o mesmo slug volta para os abertos; `--fechado` tira de lá também; `--parado-dias N` (ou `HANDOFF_PARADO_DIAS`; 0 desliga). Nenhum snapshot é apagado. `--listar` mostra os parados com a 4ª coluna `parado`.
+- **session-handoff**: reusar o slug de linha `parado`. **prime**: não lista os parados, só a contagem.
+- Hook-longrun (execucao-longa) não muda: ele lê só o bloco de abertos. Testes 31 → 36.
+
 ## 1.8.3 — 2026-10-18
 
 Motivo: o briefing do `/prime` mostrava uma única "Regra principal"; com três restrições, duas ficavam de fora, e é a que fica de fora que o agente viola ao retomar. "Pela metade" e o porquê da próxima ação também não tinham lugar próprio (análise com o Nei, 18/10, a partir dos comentários do Skool).

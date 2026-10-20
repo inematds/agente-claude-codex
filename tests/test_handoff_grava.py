@@ -34,7 +34,7 @@ def repo(tmp_path):
 
 def indice(raiz):
     r = rodar(raiz, "--listar")
-    return [ln.split("\t")[0] for ln in r.stdout.splitlines() if ln]
+    return [ln.split("\t")[0] for ln in r.stdout.splitlines() if ln and not ln.endswith("\tparado")]
 
 
 def test_carimbo_real_e_nome_com_slug(tmp_path):
@@ -347,3 +347,82 @@ def test_repo_com_mais_de_200_sujos_fica_igual_e_acusa_mudanca(tmp_path):
     (o / "f209.txt").write_text("mudou")  # fora da lista gravada (só as 200 primeiras)
     c = rodar(proj, "--conferir", snap, ok=False)
     assert c.returncode == 2 and "fora da lista gravada" in c.stdout
+
+
+# --- 1.9.3: trava do índice (vários terminais) e assuntos parados ---
+
+def _envelhecer(raiz, slug, dias):
+    for p in (raiz / "handoffs/history").glob(f"*-{slug}.md"):
+        t = time.time() - dias * 86400
+        os.utime(p, (t, t))
+
+
+def _bloco(raiz, ini, fim):
+    txt = (raiz / "handoffs/latest.md").read_text(encoding="utf-8")
+    if ini not in txt:
+        return ""
+    return txt.split(ini, 1)[1].split(fim, 1)[0]
+
+
+def test_oito_terminais_ao_mesmo_tempo_nao_perdem_linha(tmp_path):
+    raiz = repo(tmp_path)
+    procs = [subprocess.Popen([sys.executable, str(SCRIPT), "--raiz", str(raiz), "--assunto", f"t{i}"],
+                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+             for i in range(8)]
+    for p in procs:
+        p.stdin.write(CORPO)
+        p.stdin.close()
+    for p in procs:
+        p.wait(timeout=120)
+        assert p.returncode == 0, p.stderr.read()
+    assert sorted(indice(raiz)) == [f"t{i}" for i in range(8)]
+    assert int(git(raiz, "rev-list", "--count", "HEAD").strip()) == 9  # base + 8 handoffs
+
+
+def test_assunto_parado_sai_dos_abertos_e_volta_ao_gravar(tmp_path):
+    rodar(tmp_path, "--assunto", "velho", "--sem-commit")
+    _envelhecer(tmp_path, "velho", 5)
+    r = rodar(tmp_path, "--assunto", "novo", "--sem-commit")
+    assert indice(tmp_path) == ["novo"]
+    assert "velho" in _bloco(tmp_path, "<!-- handoff-parados:inicio -->", "<!-- handoff-parados:fim -->")
+    assert "velho" not in _bloco(tmp_path, "<!-- handoff-indice:inicio -->", "<!-- handoff-indice:fim -->")
+    assert "parado" in r.stdout
+    lst = rodar(tmp_path, "--listar").stdout
+    assert re.search(r"^velho\t\S+\t.+\tparado$", lst, re.M)  # slug continua achável para reusar
+    rodar(tmp_path, "--assunto", "velho", "--sem-commit")
+    assert indice(tmp_path) == ["velho", "novo"]
+    assert "velho" not in _bloco(tmp_path, "<!-- handoff-parados:inicio -->", "<!-- handoff-parados:fim -->")
+    assert len(list((tmp_path / "handoffs/history").glob("*.md"))) == 3  # nada apagado
+
+
+def test_fechado_tira_assunto_dos_parados(tmp_path):
+    rodar(tmp_path, "--assunto", "velho", "--sem-commit")
+    _envelhecer(tmp_path, "velho", 5)
+    rodar(tmp_path, "--assunto", "novo", "--sem-commit")
+    rodar(tmp_path, "--assunto", "velho", "--fechado", "--sem-commit")
+    assert "velho" not in (tmp_path / "handoffs/latest.md").read_text(encoding="utf-8").split("Cópia integral")[0]
+
+
+def test_parado_dias_zero_desliga_a_limpeza(tmp_path):
+    rodar(tmp_path, "--assunto", "velho", "--sem-commit")
+    _envelhecer(tmp_path, "velho", 30)
+    rodar(tmp_path, "--assunto", "novo", "--sem-commit", "--parado-dias", "0")
+    assert indice(tmp_path) == ["novo", "velho"]
+
+
+def test_parados_tem_teto(tmp_path):
+    hist = tmp_path / "handoffs/history"
+    hist.mkdir(parents=True)
+    linhas = []
+    for i in range(60):
+        p = hist / f"2026-01-01T0000{i:02}Z-s{i}.md"
+        p.write_text(CORPO)
+        t = time.time() - (10 + i) * 86400
+        os.utime(p, (t, t))
+        linhas.append(f"- `s{i}` · handoffs/history/{p.name} · 01/01 00:00")
+    (tmp_path / "handoffs/latest.md").write_text(
+        "# x\n\n<!-- handoff-indice:inicio -->\n" + "\n".join(linhas) + "\n<!-- handoff-indice:fim -->\n")
+    rodar(tmp_path, "--assunto", "novo", "--sem-commit")
+    par = _bloco(tmp_path, "<!-- handoff-parados:inicio -->", "<!-- handoff-parados:fim -->")
+    assert par.count("- `s") == 50 and "`s0`" in par and "`s59`" not in par  # fica o mais recente
+    assert len(list(hist.glob("*.md"))) == 61
