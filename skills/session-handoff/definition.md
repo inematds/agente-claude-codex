@@ -171,11 +171,11 @@ Caminhos: **dentro do projeto, relativos à raiz** (o arquivo viaja entre máqui
 - `<caminho relativo>` — <por que ler primeiro> (3 a 6 arquivos no máximo)
 
 ## Perguntas-teste
-1. Qual é a tarefa atual e o critério de pronto? → <resposta curta> — fonte: <caminho relativo ou commit>
-2. Qual foi a última decisão e por quê? → <resposta curta> — fonte: <…>
-3. O que não pode mudar (restrição do usuário ou trava)? → <resposta curta> — fonte: <…>
-4. O que está pela metade? → <resposta curta> — fonte: <…>
-5. Qual é a próxima ação, por quê, e ela precisa de aprovação? → <resposta curta> — fonte: <…>
+1. Qual é a tarefa atual e o critério de pronto? → <resposta curta> — fonte: <caminho relativo ou commit> — chave: `<termo que a resposta certa contém>`
+2. Qual foi a última decisão e por quê? → <resposta curta> — fonte: <…> — chave: `<termo que a resposta certa contém>`
+3. O que não pode mudar (restrição do usuário ou trava)? → <resposta curta> — fonte: <…> — chave: `<termo que a resposta certa contém>`
+4. O que está pela metade? → <resposta curta> — fonte: <…> — chave: `<termo que a resposta certa contém>`
+5. Qual é a próxima ação, por quê, e ela precisa de aprovação? → <resposta curta> — fonte: <…> — chave: `<termo que a resposta certa contém>`
 
 ## Checagem de compartilhamento
 - Sem segredos, tokens, cookies, dados pessoais ou endpoints privados: <sim / o que foi omitido e por qual canal passar>
@@ -190,5 +190,5 @@ Caminhos: **dentro do projeto, relativos à raiz** (o arquivo viaja entre máqui
 5. **Sem emojis, sem hype, sem retrospectiva** ("o que foi bem / mal" não entra).
 6. **Sem recomendações além da "Próxima ação exata".** O próximo agente decide.
 7. **Handoff não é autorização**: não escreva a próxima ação como ordem para deploy, publicação, envio ou compra sem dizer que precisa de confirmação do usuário.
-8. **Perguntas-teste**: sempre as 5, nesta ordem, com resposta de uma linha. A fonte é **um arquivo do projeto ou um commit, nunca o próprio handoff** (`decisions.md`, `tasks/current.md`, `goal.md`, `CLAUDE.md`, o commit…). Se a resposta só existe na conversa, grave-a antes num arquivo do projeto (ex.: a decisão em `decisions.md`) e aponte para ele, ou escreva "fonte: só nesta conversa". É por elas que o `prime` (e a sessão retomada depois de compactar) mede o que foi recuperado: quem retoma responde pelos arquivos e compara.
+8. **Perguntas-teste**: sempre as 5, nesta ordem, com resposta de uma linha. A fonte é **um arquivo do projeto ou um commit, nunca o próprio handoff** (`decisions.md`, `tasks/current.md`, `goal.md`, `CLAUDE.md`, o commit…). Se a resposta só existe na conversa, grave-a antes num arquivo do projeto (ex.: a decisão em `decisions.md`) e aponte para ele, ou escreva "fonte: só nesta conversa". É por elas que o `prime` (e a sessão retomada depois de compactar) mede o que foi recuperado. **Cada uma termina com `— chave: \`valor\``**: um termo curto que a resposta certa tem de conter (caminho, commit curto, número, sim/não, slug ou palavra exata; `a` | `b` aceita mais de um). É a chave que deixa o **script** dar a nota (`nota-retomada.py --respostas`), não o agente. Evite chave genérica ("sim", "curso") que qualquer resposta contém; pergunta sem resposta conferível leva `— chave: —` e fica "não conferida".
 9. **Não fazer**: liste **todas** as restrições e travas que valem para o trabalho, não só a principal: o que o usuário proibiu ou limitou nesta sessão, travas do projeto que tocam a tarefa e "não mexer em X". É a seção que o `prime` mostra inteira ao retomar; restrição fora dela é a que o próximo agente viola. Dita só na conversa: grave antes num arquivo do projeto e aponte, ou escreva "dito pelo usuário em DD/MM, só nesta conversa".

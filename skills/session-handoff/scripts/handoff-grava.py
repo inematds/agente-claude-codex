@@ -138,6 +138,16 @@ def estado_repo(repo):
     return linhas
 
 
+def perguntas_sem_chave(corpo):
+    """Números das perguntas-teste sem '— chave: ...' (o nota-retomada.py dá a nota por elas)."""
+    sec = next((s for s in ("## Perguntas-teste", "## Test questions", "## Preguntas de control") if s in corpo), None)
+    if not sec:
+        return []
+    bloco = re.split(r"^## ", corpo.split(sec, 1)[1], maxsplit=1, flags=re.M)[0]
+    return [m[1] for m in re.finditer(r"^\s*(\d)[.)]\s+(.*)$", bloco, re.M)
+            if not re.search(r"\s[—-]\s*(?:chave|key|clave):\s*\S", m[2], re.I)]
+
+
 def repos_citados(raiz, corpo):
     """Raízes git de caminhos absolutos citados em crase que não são a raiz do handoff (para avisar)."""
     achados = []
@@ -675,6 +685,11 @@ def main():
         if not any(s in corpo for s in ("## Perguntas-teste", "## Test questions", "## Preguntas de control")):
             avisos.append("aviso: handoff sem a seção Perguntas-teste — o prime não vai dar a nota N/5; "
                           "grave de novo com as 5 perguntas do modelo.")
+        sem_chave = perguntas_sem_chave(corpo)
+        if sem_chave:
+            avisos.append("aviso: pergunta(s)-teste sem chave: " + ", ".join(sem_chave) + " — sem `— chave: `valor``"
+                          " a nota da retomada não confere essa pergunta; grave de novo com uma chave curta"
+                          " (arquivo, commit, número, sim/não ou termo que a resposta certa tem de conter).")
         if not any(s in corpo for s in ("## Não fazer", "## Do not do", "## No hacer")):
             avisos.append("aviso: falta a seção Não fazer (restrições e travas) — o prime não terá a lista do que "
                           "não pode mudar; grave de novo com todas as restrições, uma por item.")

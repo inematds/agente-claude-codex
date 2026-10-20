@@ -501,3 +501,11 @@ def test_arrumar_tira_copia_integral_antiga(tmp_path):
     rodar(raiz, "--arrumar")
     txt = lt.read_text()
     assert "CORPO-VELHO" not in txt and "Mais recente:" in txt and indice(raiz) == ["a"]
+
+
+def test_avisa_pergunta_teste_sem_chave(tmp_path):
+    sem = CORPO + "\n## Perguntas-teste\n1. a? → b — fonte: `x`\n2. c? → d — fonte: `y` — chave: `d`\n"
+    r = rodar(tmp_path, "--assunto", "x", "--sem-commit", corpo=sem)
+    assert "aviso: pergunta(s)-teste sem chave: 1" in r.stdout
+    com = CORPO + "\n## Perguntas-teste\n1. a? → b — fonte: `x` — chave: `b`\n2. c? → d — fonte: `y` — chave: `d`\n"
+    assert "sem chave" not in rodar(tmp_path, "--assunto", "y", "--sem-commit", corpo=com).stdout

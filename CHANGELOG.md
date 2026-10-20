@@ -2,6 +2,14 @@
 
 Semver `vX.XX.YY`: patch incrementa YY; minor incrementa XX e carrega YY; só major zera.
 
+## 1.12.3 — 2026-10-20
+
+Motivo: a nota das perguntas-teste era dada pelo próprio agente e as respostas não ficavam gravadas (auditoria de 2 das 8 medições: só "5/5 batem"); o 2/5 de 18/10 era handoff desatualizado, não informação perdida, e entrava na mesma média (pedido do Nei, 20/10).
+
+- **session-handoff**: cada pergunta-teste termina com `— chave: \`valor\`` (termo curto que a resposta certa contém; `a` | `b` aceita mais de um; `— chave: —` = não conferível). Regra 8 explica.
+- **handoff-grava.py**: aviso quando pergunta-teste não tem chave. Testes 42 → 43.
+- **prime (6c)**: escreve as 5 respostas antes de comparar e manda para o `nota-retomada.py --respostas` (execucao-longa / hook-longrun 1.10.6): a nota é a do script, que separa "desatualizado" (a fonte mudou depois do handoff) de "não recuperou". Sem chave ou sem o script, a nota sai marcada como autoavaliada.
+
 ## 1.11.3 — 2026-10-20
 
 Motivo: depois da limpeza, o `latest.md` do wifi ainda tinha 19,9 KB, quase tudo a cópia integral do último snapshot, lida a cada /prime e a cada /clear (pedido do Nei, 20/10: "pode otimizar o handoff latest").
