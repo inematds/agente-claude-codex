@@ -157,6 +157,8 @@ O `prime` aceita esse caminho (usa exatamente esse snapshot; se houver um mais n
 
 **Trabalho em outro repo (1.7.3).** Se a sessão está aberta num projeto mas edita outro (ex.: aberta no `wifi`, trabalhando no `robot`), grave com `--repo ~/projetos/robot`: o bloco de estado guarda também o commit e os arquivos alterados desse repo, o `--conferir` confere os dois, e o `prime` busca o estado real lá quando precisar. O script avisa (`aviso: …`) quando o corpo cita outro repo sem `--repo` e quando falta a seção Perguntas-teste.
 
+**`latest.md` leve (1.11.3).** O índice traz só um ponteiro para o snapshot mais novo, sem copiar o corpo (medido: wifi 19,9 → 4,8 KB; reel7etapas 22,2 → 0,7 KB; r7ex 14,3 → 0,6 KB).
+
 **Lista de fechados (1.10.3).** Trabalho fechado vai para `handoffs/fechados.md` (slug, snapshot, data e título), para pesquisar depois; `--recuperar-fechados` traz os antigos pelo log do git e `--arrumar` aplica parados + fechados num projeto existente de uma vez.
 
 **Índice com trava e parados (1.9.3).** Vários terminais gravando handoff ao mesmo tempo esperam a vez (`flock`) em vez de um apagar a linha do outro, e assunto sem handoff há mais de 3 dias sai dos abertos para **Parados** (volta ao gravar de novo com o mesmo slug; nada é apagado).

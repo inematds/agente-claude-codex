@@ -12,7 +12,7 @@ O que faz:
      criação exclusiva (sufixo -2, -3... se existir); nunca edita snapshot antigo;
   2. anexa ao snapshot um BLOCO DE ESTADO feito pelo script, não pelo agente: commit (HEAD), e sha256
      dos arquivos citados em crase no corpo e dos arquivos sujos fora de handoffs/ no momento;
-  3. latest.md = índice de trabalhos abertos (uma linha por assunto) + cópia integral do snapshot novo;
+  3. latest.md = índice de trabalhos abertos (uma linha por assunto) + ponteiro para o snapshot mais novo;
      --fechado tira o assunto do índice; legado (cópia integral ou ponteiro) é preservado uma vez;
      --repo DIR (repetível) acrescenta ao bloco o commit e os sujos de outro repo onde o trabalho acontece
      (sessão aberta num projeto editando outro); o --conferir passa a conferir esse repo também;
@@ -430,7 +430,11 @@ def montar_latest(raiz, entradas, atual_rel, corpo, parados=None, dias=PARADO_DI
                "Fora dos abertos: o /prime não lista. Gravar um handoff com o mesmo slug volta o assunto "
                f"para os abertos; `--fechado` tira daqui. Snapshots continuam em handoffs/history/.\n\n"
                f"{PAR_INI}\n{lp}\n{PAR_FIM}\n")
-    rodape = (f"\n---\n\nCópia integral do snapshot mais recente ({atual_rel}):\n\n{corpo}"
+    # Só o ponteiro: o corpo fica no snapshot (copiar aqui fazia o latest.md pesar 20 KB a cada leitura).
+    tit = titulo_de(corpo) if atual_rel else ""
+    rodape = (f"\n---\n\nMais recente: `{atual_rel}`" + (f" — {tit}" if tit else "") + "\n\n"
+              "O conteúdo de cada trabalho fica no snapshot citado: abra o do assunto que for continuar "
+              "(o /prime faz isso).\n"
               if atual_rel else "\n---\n\nNenhum trabalho aberto.\n")
     return (f"# Handoffs — trabalhos abertos\n\n"
             "Cada linha é um assunto em andamento: leia o snapshot do assunto que for continuar. "
@@ -552,7 +556,8 @@ def arrumar(raiz, hist, latest, arq_fec, a):
         movidos = separar_parados(raiz, entradas, parados, a.parado_dias, None)
         par_ord = ordenar(raiz, parados)
         parados = dict(par_ord[:MAX_PARADOS])
-        if not novos and not movidos and len(par_ord) <= MAX_PARADOS:
+        com_copia = "Cópia integral do snapshot mais recente" in latest.read_text(encoding="utf-8")  # antes da 1.11.3
+        if not novos and not movidos and len(par_ord) <= MAX_PARADOS and not com_copia:
             print("nada a arrumar: " + f"{len(entradas)} aberto(s), {len(parados)} parado(s), {len(fechados)} fechado(s)")
             return
         gravados = []

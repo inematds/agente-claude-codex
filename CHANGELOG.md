@@ -2,6 +2,14 @@
 
 Semver `vX.XX.YY`: patch incrementa YY; minor incrementa XX e carrega YY; só major zera.
 
+## 1.11.3 — 2026-10-20
+
+Motivo: depois da limpeza, o `latest.md` do wifi ainda tinha 19,9 KB, quase tudo a cópia integral do último snapshot, lida a cada /prime e a cada /clear (pedido do Nei, 20/10: "pode otimizar o handoff latest").
+
+- **`latest.md` = índice + ponteiro**: `Mais recente: <snapshot> — <título>`, sem copiar o corpo. O conteúdo fica só no snapshot.
+- **`--arrumar`** também regrava `latest.md` que ainda tem a cópia integral antiga.
+- **prime**: aceita os dois formatos e sempre abre o snapshot pelo caminho do índice. Template de `handoffs/history/README.md` atualizado. Testes 41 → 42.
+
 ## 1.10.3 — 2026-10-20
 
 Motivo: trabalho fechado só sumia do índice; o snapshot ficava em history/, mas sem lista para achar depois (pedido do Nei, 20/10: "os fechados não poderiam ir para uma lista fechados, para pesquisa?").

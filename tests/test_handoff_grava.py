@@ -55,10 +55,13 @@ def test_dois_assuntos_convivem_no_indice(tmp_path):
     assert len(list((tmp_path / "handoffs/history").glob("*.md"))) == 3
 
 
-def test_latest_tem_copia_integral_do_mais_novo(tmp_path):
+def test_latest_aponta_o_mais_novo_sem_copiar_o_corpo(tmp_path):
     rodar(tmp_path, "--assunto", "a", "--sem-commit")
-    rodar(tmp_path, "--assunto", "b", "--sem-commit", corpo=CORPO + "MARCA-B\n")
-    assert "MARCA-B" in (tmp_path / "handoffs/latest.md").read_text()
+    r = rodar(tmp_path, "--assunto", "b", "--sem-commit", corpo="# Handoff — Título B\n\n" + CORPO + "MARCA-B\n")
+    snap = re.search(r"snapshot: (\S+)", r.stdout)[1]
+    txt = (tmp_path / "handoffs/latest.md").read_text()
+    assert "MARCA-B" not in txt and f"Mais recente: `{snap}` — Título B" in txt
+    assert len(txt) < 1200  # só índice + ponteiro
 
 
 def test_fechado_sai_do_indice(tmp_path):
@@ -487,3 +490,14 @@ def test_arrumar_move_parados_e_recupera_fechados_sem_snapshot_novo(tmp_path):
     assert len(list((raiz / "handoffs/history").glob("*.md"))) == n
     assert "handoffs/fechados.md" in git(raiz, "show", "--name-only", "--format=", "HEAD").split()
     assert "nada a arrumar" in rodar(raiz, "--arrumar").stdout
+
+
+def test_arrumar_tira_copia_integral_antiga(tmp_path):
+    raiz = repo(tmp_path)
+    rodar(raiz, "--assunto", "a")
+    lt = raiz / "handoffs/latest.md"
+    lt.write_text(lt.read_text().split("\n---\n")[0] + "\n---\n\nCópia integral do snapshot mais recente (x):\n\nCORPO-VELHO\n")
+    git(raiz, "commit", "-qam", "formato antigo")
+    rodar(raiz, "--arrumar")
+    txt = lt.read_text()
+    assert "CORPO-VELHO" not in txt and "Mais recente:" in txt and indice(raiz) == ["a"]

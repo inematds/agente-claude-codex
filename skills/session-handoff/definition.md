@@ -9,7 +9,7 @@ identity:
       before clear". Produces a structured, sanitized handoff in chat and, when the project root has
       handoffs/, AGENTS.md or CLAUDE.md (creating handoffs/history/ if missing), saves it with scripts/handoff-grava.py as a never-overwritten snapshot
       handoffs/history/<UTC-stamp>-<assunto>.md, keeps handoffs/latest.md as an index of open work by
-      subject (plus a full copy of the newest) and commits only those files (no push), so a fresh agent in any
+      subject (plus a pointer to the newest) and commits only those files (no push), so a fresh agent in any
       runtime can continue without losing continuity.
 activation:
   triggers: []
@@ -89,7 +89,7 @@ Antes de gravar, confira e declare na seção própria que o texto **não conté
    - cria `handoffs/history/<AAAA-MM-DDTHHMMSSZ>-<slug>.md` com gravação exclusiva (sufixo `-2`… se existir) e nunca edita snapshot antigo;
    - recusa symlink e caminho fora da raiz;
    - preserva uma vez o `latest.md` legado (cópia integral que não está em `history/`) como `<carimbo-do-mtime>-anterior.md`;
-   - reescreve `handoffs/latest.md` = **índice de trabalhos abertos** (uma linha por assunto: slug · snapshot · data) + **cópia integral** do snapshot mais novo (quem lê `latest.md` como documento continua funcionando);
+   - reescreve `handoffs/latest.md` = **índice de trabalhos abertos** (uma linha por assunto: slug · snapshot · data) + **ponteiro** para o snapshot mais novo (caminho e título; desde a 1.11.3 o corpo não é mais copiado, para o `latest.md` ficar leve — quem lê o `latest.md` abre o snapshot citado);
    - anexa ao fim do snapshot o **bloco de estado** (`<!-- handoff-estado:inicio/fim -->`): commit atual (HEAD) e sha256 dos arquivos citados em crase no corpo e dos arquivos sujos fora de `handoffs/`. Quem grava é o script, não você: **não escreva esse bloco à mão** (se vier no corpo, o script descarta). É ele que deixa o próximo agente saber se o handoff ficou velho (`--conferir`);
    - lê de volta e confere;
    - se a raiz for repositório git, faz **um commit só com o snapshot e o `latest.md`** (`git commit -- <caminhos>`: o que outra pessoa deixou staged fica fora), autor = config do repo. **Nunca faz push.** `--sem-commit` desliga.
