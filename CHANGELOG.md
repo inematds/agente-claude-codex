@@ -2,6 +2,15 @@
 
 Semver `vX.XX.YY`: patch incrementa YY; minor incrementa XX e carrega YY; só major zera.
 
+## 1.10.3 — 2026-10-20
+
+Motivo: trabalho fechado só sumia do índice; o snapshot ficava em history/, mas sem lista para achar depois (pedido do Nei, 20/10: "os fechados não poderiam ir para uma lista fechados, para pesquisa?").
+
+- **`handoffs/fechados.md`**: `--fechado` grava ali uma linha por assunto (slug · snapshot do fechamento · data com ano · título do handoff), mais recente primeiro. Reabrir (gravar com o mesmo slug) tira de lá. `--fechados` lista. Fora do `latest.md`, que continua leve; o /prime só consulta quando o usuário pergunta por trabalho antigo.
+- **`--recuperar-fechados`**: preenche a lista com os fechados de antes, pelos commits `handoff: <slug> (fechado)`; pula os reabertos e não duplica.
+- **`--arrumar`**: sem snapshot novo, recupera os fechados, move os parados e regrava o índice, com commit só desses arquivos. Para aplicar a 1.9.3/1.10.3 em projetos já existentes de uma vez.
+- Testes 36 → 41.
+
 ## 1.9.3 — 2026-10-20
 
 Motivo: com vários terminais no mesmo projeto, o `latest.md` é o único arquivo que todos regravam. Sem trava, duas gravações ao mesmo tempo perdiam linha do índice (reproduzido: 8 gravações simultâneas → "leitura de volta não bate"). E o índice só encolhia com `--fechado`, que quase ninguém usa: o wifi tinha 42 assuntos "abertos", 11 sem handoff havia mais de 3 dias (pedido do Nei, 20/10, a partir de comentário no Skool).

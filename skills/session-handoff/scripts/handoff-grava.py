@@ -438,6 +438,80 @@ def montar_latest(raiz, entradas, atual_rel, corpo, parados=None, dias=PARADO_DI
             f"{INICIO}\n{abertos}\n{FIM}\n{par}{rodape}")
 
 
+FEC_INI = "<!-- handoff-fechados:inicio -->"
+FEC_FIM = "<!-- handoff-fechados:fim -->"
+FEC_LINHA = re.compile(r"^- `(?P<slug>[a-z0-9-]+)` · (?P<arq>handoffs/history/[^ ]+\.md) · "
+                       r"(?P<quando>\d{2}/\d{2}/\d{4} \d{2}:\d{2}) · (?P<titulo>.*)$")
+
+
+def titulo_de(texto):
+    """Primeiro '# ' do snapshot, sem o prefixo 'Handoff —'; uma linha, até 120 caracteres."""
+    for ln in texto.splitlines():
+        if ln.startswith("# "):
+            t = re.sub(r"^Handoff\s*[—–:-]\s*", "", ln[2:].strip(), flags=re.I)
+            return re.sub(r"\s+", " ", t)[:120].replace("`", "'")
+    return ""
+
+
+def ler_fechados(arq):
+    """{slug: (arq, 'dd/mm/AAAA HH:MM', titulo)} de handoffs/fechados.md."""
+    try:
+        txt = arq.read_text(encoding="utf-8")
+    except OSError:
+        return {}
+    if FEC_INI in txt and FEC_FIM in txt:
+        txt = txt.split(FEC_INI, 1)[1].split(FEC_FIM, 1)[0]
+    out = {}
+    for ln in txt.splitlines():
+        m = FEC_LINHA.match(ln.strip())
+        if m:
+            out[m["slug"]] = (m["arq"], m["quando"], m["titulo"])
+    return out
+
+
+def _chave_data(q):
+    try:
+        return dt.datetime.strptime(q, "%d/%m/%Y %H:%M")
+    except ValueError:
+        return dt.datetime.min
+
+
+def gravar_fechados(arq, fechados):
+    linhas = [f"- `{s}` · {a} · {q} · {t}" for s, (a, q, t) in
+              sorted(fechados.items(), key=lambda kv: _chave_data(kv[1][1]), reverse=True)]
+    tmp = arq.with_suffix(".md.tmp")
+    tmp.write_text("# Handoffs — trabalhos fechados\n\n"
+                   "Um assunto por linha, o fechamento mais recente primeiro: slug · snapshot do fechamento · data · "
+                   "título. Para pesquisar trabalho antigo; o /prime não lê. Gravado por handoff-grava.py.\n\n"
+                   f"{FEC_INI}\n" + ("\n".join(linhas) if linhas else "- nenhum") + f"\n{FEC_FIM}\n",
+                   encoding="utf-8")
+    os.replace(tmp, arq)
+
+
+def recuperar_fechados(raiz, fechados, abertos):
+    """Fechados de antes da 1.10.3, pelo log do git (commits 'handoff: <slug> (fechado)'). Devolve os novos."""
+    if not eh_git(raiz):
+        erro("--recuperar-fechados precisa de repositório git")
+    r = git(raiz, "log", "--format=%H%x09%ct%x09%s", "--grep=^handoff: [a-z0-9-]* (fechado)$")
+    novos = []
+    for ln in r.stdout.splitlines():  # mais recente primeiro
+        h, ct, assunto = ln.split("\t", 2)
+        m = re.match(r"^handoff: ([a-z0-9-]+) \(fechado\)$", assunto)
+        if not m or m[1] in fechados or m[1] in abertos:
+            continue
+        slug = m[1]
+        nomes = git(raiz, "show", "--name-only", "--diff-filter=A", "--format=", h, "--",
+                    "handoffs/history").stdout.split()
+        arq = next((n for n in nomes if re.search(rf"-{re.escape(slug)}(-\d+)?\.md$", n)), None)
+        if not arq:
+            continue
+        p = rel_ok(raiz, arq)
+        tit = titulo_de(p.read_text(encoding="utf-8")) if p is not None and p.is_file() else ""
+        fechados[slug] = (arq, dt.datetime.fromtimestamp(int(ct)).strftime("%d/%m/%Y %H:%M"), tit)
+        novos.append(slug)
+    return novos
+
+
 def git(raiz, *args):
     return subprocess.run(["git", "-C", str(raiz), *args], capture_output=True, text=True)
 
@@ -459,6 +533,45 @@ def commitar(raiz, caminhos, slug, fechado):
     return f"commit {autor} (sem push)"
 
 
+def arrumar(raiz, hist, latest, arq_fec, a):
+    """Sem snapshot novo: recupera fechados do git, move parados e regrava o índice (uma vez por projeto)."""
+    if not hist.is_dir():
+        erro("projeto sem handoffs/history/")
+    sem_symlink(raiz, hist)
+    for p in (latest, arq_fec, latest.with_name("indice.txt")):
+        if p.exists():
+            sem_symlink(raiz, p)
+    with Trava(hist):
+        entradas, formato = ler_indice(latest)
+        if formato != "indice":
+            print(f"latest.md sem índice (formato {formato}): nada a arrumar")
+            return
+        parados = ler_parados(latest)
+        fechados = ler_fechados(arq_fec)
+        novos = recuperar_fechados(raiz, fechados, set(entradas) | set(parados)) if eh_git(raiz) else []
+        movidos = separar_parados(raiz, entradas, parados, a.parado_dias, None)
+        par_ord = ordenar(raiz, parados)
+        parados = dict(par_ord[:MAX_PARADOS])
+        if not novos and not movidos and len(par_ord) <= MAX_PARADOS:
+            print("nada a arrumar: " + f"{len(entradas)} aberto(s), {len(parados)} parado(s), {len(fechados)} fechado(s)")
+            return
+        gravados = []
+        if novos:
+            gravar_fechados(arq_fec, fechados)
+            gravados.append(arq_fec)
+        rodape_rel = ordenar(raiz, entradas)[0][1][0] if entradas else None
+        rodape = (raiz / rodape_rel).read_text(encoding="utf-8") if rodape_rel else ""
+        tmp = latest.with_suffix(".md.tmp")
+        tmp.write_text(montar_latest(raiz, entradas, rodape_rel, rodape, parados, a.parado_dias), encoding="utf-8")
+        os.replace(tmp, latest)
+        indice = latest.with_name("indice.txt")
+        indice.write_text("".join(f"- `{s}` · {x} · {q}\n" for s, (x, q) in ordenar(raiz, entradas)), encoding="utf-8")
+        gravados += [latest, indice]
+        print(f"arrumado: {len(entradas)} aberto(s), {len(movidos)} movido(s) para parados, "
+              f"{len(novos)} fechado(s) recuperado(s)")
+        print(commitar(raiz, gravados, "arrumar-indice", False) if not a.sem_commit else "sem commit (--sem-commit)")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--assunto", help="slug estável do trabalho (ex.: rea-es); reuse o do índice")
@@ -470,6 +583,11 @@ def main():
     ap.add_argument("--sem-commit", action="store_true")
     ap.add_argument("--repo", action="append", default=[],
                     help="repositório git onde o trabalho acontece, fora da raiz do handoff (pode repetir)")
+    ap.add_argument("--fechados", action="store_true", help="lista os trabalhos fechados (handoffs/fechados.md) e sai")
+    ap.add_argument("--recuperar-fechados", action="store_true",
+                    help="preenche handoffs/fechados.md com os fechados antigos, pelo log do git")
+    ap.add_argument("--arrumar", action="store_true",
+                    help="sem snapshot novo: recupera fechados, move parados e regrava o índice (commit só desses)")
     ap.add_argument("--parado-dias", type=int, default=int(os.environ.get("HANDOFF_PARADO_DIAS", PARADO_DIAS)),
                     help=f"assunto sem handoff há mais que isso sai dos abertos (padrão {PARADO_DIAS}; 0 desliga)")
     a = ap.parse_args()
@@ -492,12 +610,41 @@ def main():
             print(f"(latest.md sem índice: formato {formato})", file=sys.stderr)
         return
 
+    arq_fec = raiz / "handoffs" / "fechados.md"
+    if a.fechados:
+        for s, (arq, q, t) in sorted(ler_fechados(arq_fec).items(), key=lambda kv: _chave_data(kv[1][1]),
+                                     reverse=True):
+            print(f"{s}\t{arq}\t{q}\t{t}")
+        return
+
+    if a.recuperar_fechados:
+        hist.mkdir(parents=True, exist_ok=True)
+        sem_symlink(raiz, hist)
+        if arq_fec.exists():
+            sem_symlink(raiz, arq_fec)
+        with Trava(hist):
+            fechados = ler_fechados(arq_fec)
+            abertos = set(ler_indice(latest)[0]) | set(ler_parados(latest))
+            novos = recuperar_fechados(raiz, fechados, abertos)
+            if novos:
+                gravar_fechados(arq_fec, fechados)
+            print(f"{len(novos)} fechado(s) recuperado(s)" + (": " + ", ".join(novos) if novos else ""))
+            if novos and not a.sem_commit:
+                print(commitar(raiz, [arq_fec], "fechados-recuperados", False))
+        return
+
+    if a.arrumar:
+        arrumar(raiz, hist, latest, arq_fec, a)
+        return
+
     if not a.assunto or not SLUG.match(a.assunto):
         erro("--assunto obrigatório: minúsculas, números e hífen (ex.: rea-es)")
     hist.mkdir(parents=True, exist_ok=True)
     sem_symlink(raiz, hist)
     if latest.exists():
         sem_symlink(raiz, latest)
+    if arq_fec.exists():
+        sem_symlink(raiz, arq_fec)
 
     # Parte lenta (hash dos arquivos) fora da trava; índice, gravação e commit dentro dela.
     avisos, corpo = [], None
@@ -549,10 +696,18 @@ def main():
 
         rel = str(snap.relative_to(raiz))
         parados.pop(a.assunto, None)
+        fechados = ler_fechados(arq_fec)
+        antes_fec = dict(fechados)
         if a.fechado:
             entradas.pop(a.assunto, None)
+            fechados[a.assunto] = (rel, dt.datetime.fromtimestamp(snap.stat().st_mtime).strftime("%d/%m/%Y %H:%M"),
+                                   titulo_de(snap.read_text(encoding="utf-8")))
         else:
             entradas[a.assunto] = (rel, quando_de(snap))
+            fechados.pop(a.assunto, None)  # reaberto
+        if fechados != antes_fec:
+            gravar_fechados(arq_fec, fechados)
+            gravados.append(arq_fec)
         movidos = separar_parados(raiz, entradas, parados, a.parado_dias, a.assunto)
         par_ord = ordenar(raiz, parados)
         cortados = len(par_ord) - MAX_PARADOS

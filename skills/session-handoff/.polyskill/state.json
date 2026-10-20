@@ -1,12 +1,12 @@
 {
   "files": {
-    "dist/claude/session-handoff/SKILL.md": "d62c91cf223b55d1",
-    "dist/codex/session-handoff/SKILL.md": "f3b0fffe77c17a34",
+    "dist/claude/session-handoff/SKILL.md": "247bdbac86a8870a",
+    "dist/codex/session-handoff/SKILL.md": "c1097bc43e8b0a28",
     "dist/codex/session-handoff/agents/openai.yaml": "2ad8e31ee495d75f",
     "dist/claude/session-handoff/scripts/__pycache__/handoff-grava.cpython-312.pyc": "054a3f3c8b1b9c0e",
-    "dist/claude/session-handoff/scripts/handoff-grava.py": "b3341eb387cd4207",
+    "dist/claude/session-handoff/scripts/handoff-grava.py": "82351599b9fa6a13",
     "dist/codex/session-handoff/scripts/__pycache__/handoff-grava.cpython-312.pyc": "054a3f3c8b1b9c0e",
-    "dist/codex/session-handoff/scripts/handoff-grava.py": "b3341eb387cd4207"
+    "dist/codex/session-handoff/scripts/handoff-grava.py": "82351599b9fa6a13"
   },
-  "built_at": "2026-10-20T20:50:42.517Z"
+  "built_at": "2026-10-20T20:54:26.539Z"
 }

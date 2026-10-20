@@ -426,3 +426,64 @@ def test_parados_tem_teto(tmp_path):
     par = _bloco(tmp_path, "<!-- handoff-parados:inicio -->", "<!-- handoff-parados:fim -->")
     assert par.count("- `s") == 50 and "`s0`" in par and "`s59`" not in par  # fica o mais recente
     assert len(list(hist.glob("*.md"))) == 61
+
+
+# --- 1.10.3: lista de fechados (handoffs/fechados.md) para pesquisa ---
+
+def _fechados(raiz):
+    p = raiz / "handoffs/fechados.md"
+    return p.read_text(encoding="utf-8") if p.exists() else ""
+
+
+def test_fechado_vai_para_fechados_md_com_titulo(tmp_path):
+    rodar(tmp_path, "--assunto", "rea-es", "--sem-commit")
+    rodar(tmp_path, "--assunto", "rea-es", "--fechado", "--sem-commit", corpo="# Handoff — Curso REA em espanhol\n\n" + CORPO)
+    f = _fechados(tmp_path)
+    assert re.search(r"^- `rea-es` · handoffs/history/\S+-rea-es(-\d+)?\.md · \d{2}/\d{2}/\d{4} \d{2}:\d{2} · Curso REA em espanhol$", f, re.M)
+    assert "rea-es" not in (tmp_path / "handoffs/latest.md").read_text(encoding="utf-8").split("Cópia integral")[0]
+    lst = rodar(tmp_path, "--fechados").stdout
+    assert lst.startswith("rea-es\t") and "Curso REA em espanhol" in lst
+
+
+def test_reabrir_tira_dos_fechados(tmp_path):
+    rodar(tmp_path, "--assunto", "x", "--fechado", "--sem-commit")
+    assert "`x`" in _fechados(tmp_path)
+    rodar(tmp_path, "--assunto", "x", "--sem-commit")
+    assert "`x`" not in _fechados(tmp_path) and indice(tmp_path) == ["x"]
+
+
+def test_commit_leva_fechados_md(tmp_path):
+    raiz = repo(tmp_path)
+    rodar(raiz, "--assunto", "x", "--fechado")
+    assert "handoffs/fechados.md" in git(raiz, "show", "--name-only", "--format=", "HEAD").split()
+
+
+def test_recuperar_fechados_pelo_git_log(tmp_path):
+    raiz = repo(tmp_path)
+    rodar(raiz, "--assunto", "velho", "--fechado", corpo="# Handoff — Trabalho antigo\n\n" + CORPO)
+    (raiz / "handoffs/fechados.md").unlink()  # simula fechado gravado antes da 1.10.3
+    git(raiz, "commit", "-qam", "apaga")
+    rodar(raiz, "--assunto", "novo", "--sem-commit")
+    assert "velho" not in _fechados(raiz)
+    r = rodar(raiz, "--recuperar-fechados", "--sem-commit")
+    assert "1 fechado(s) recuperado(s)" in r.stdout
+    assert "`velho`" in _fechados(raiz) and "Trabalho antigo" in _fechados(raiz)
+    r2 = rodar(raiz, "--recuperar-fechados", "--sem-commit")
+    assert "0 fechado(s) recuperado(s)" in r2.stdout  # não duplica
+
+
+def test_arrumar_move_parados_e_recupera_fechados_sem_snapshot_novo(tmp_path):
+    raiz = repo(tmp_path)
+    rodar(raiz, "--assunto", "fim", "--fechado", corpo="# Handoff — Já entregue\n\n" + CORPO)
+    (raiz / "handoffs/fechados.md").unlink()
+    git(raiz, "commit", "-qam", "apaga")
+    rodar(raiz, "--assunto", "velho")
+    rodar(raiz, "--assunto", "vivo")
+    _envelhecer(raiz, "velho", 5)
+    n = len(list((raiz / "handoffs/history").glob("*.md")))
+    r = rodar(raiz, "--arrumar")
+    assert indice(raiz) == ["vivo"] and "`velho`" in _bloco(raiz, "<!-- handoff-parados:inicio -->", "<!-- handoff-parados:fim -->")
+    assert "`fim`" in _fechados(raiz)
+    assert len(list((raiz / "handoffs/history").glob("*.md"))) == n
+    assert "handoffs/fechados.md" in git(raiz, "show", "--name-only", "--format=", "HEAD").split()
+    assert "nada a arrumar" in rodar(raiz, "--arrumar").stdout
